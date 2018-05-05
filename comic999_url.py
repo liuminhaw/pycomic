@@ -82,7 +82,7 @@ def comic999_url():
 
     # Check for optional argument PAGENUM
     try:
-        book.current = sys.argv[3]
+        book.current = int(sys.argv[3])
         write_mode = 'a'
     except:
         book.current = 1
