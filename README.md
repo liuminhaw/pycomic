@@ -36,6 +36,12 @@ Store comic information to local.
 
     pycomic add ENGLISHNAME CHINESENAME NUMBER
 
+##### fetch-chapter
+Store chapter link of comic to local
+
+    pycomic fetch-chapter COMICNAME
+    
+
 ##### list
 List stored comics
 Optional COMICNAME search for matching
