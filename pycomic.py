@@ -6,15 +6,16 @@ Author:
 """
 
 import sys, os, errno
-import csv, re
+import csv, re, time
 import requests
 import pycomic_class as pycl
 from pathlib import Path
 from bs4 import BeautifulSoup
+from selenium import webdriver
 
 import logging
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
-#logging.disable(logging.INFO)
+logging.disable(logging.INFO)
 
 # Pre-defined
 HOME = str(Path.home())
@@ -37,20 +38,26 @@ def main():
         pycomic_help()
     elif sys.argv[1] == 'add':
         pycomic_add()
-    elif sys.argv[1] == 'list':
-        pycomic_list()
     elif sys.argv[1] == 'download':
         pycomic_download()
-    elif sys.argv[1] == 'help':
-        pycomic_help()
     elif sys.argv[1] == 'fetch-chapter':
         pycomic_fetch_chapter()
     elif sys.argv[1] == 'fetch-url':
         pycomic_fetch_url()
-    elif sys.argv[1] == 'search':
-        pycomic_search()
+    elif sys.argv[1] == 'help':
+        pycomic_help()
+    elif sys.argv[1] == 'list':
+        pycomic_list()
+    elif sys.argv[1] == 'list-menu':
+        pycomic_list_menu()
+    elif sys.argv[1] == 'list-chapters':
+        pycomic_list_chapters()
+    elif sys.argv[1] == 'list-url':
+        pycomic_list_url()
     elif sys.argv[1] == 'make-pdf':
         pycomic_make_pdf()
+    elif sys.argv[1] == 'search':
+        pycomic_search()
     else:
         pycomic_help()
 
@@ -62,9 +69,12 @@ def pycomic_help():
         pycomic add ENGLISHNAME CHINESENAME NUMBER
         pycomic download COMICNAME CHAPTER
         pycomic fetch-chapter COMICNAME
-        pycomic fetch-url COMICNAME CHAPTER
+        pycomic fetch-url COMICNAME IDENTITYNUM
         pycomic help
         pycomic list [PATTERN]
+        pycomic list-menu COMICNAME [PATTERN]
+        pycomic list-chapters
+        pycomic list-url COMICNAME
         pycomic make-pdf COMICNAME CHAPTER
         pycomic search COMICNAME
     """
@@ -137,6 +147,50 @@ def pycomic_list():
     print('------ END ------')
 
 
+def pycomic_list_menu():
+    message = \
+    """
+    USAGE:
+        pycomic list-menu COMICNAME [PATTERN]
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    try:
+        pattern = sys.argv[3]
+    except:
+        pattern = ''
+
+    _check()
+
+    # Find comic in menu.csv file
+    comic = _comic_in_menu(comic_name)
+
+    # Search content in file
+    menu_csv = comic.menu_csv
+    re_pattern = re.compile(r'.*{}.*'.format(pattern))
+    identify_num = 0
+    print('----- START -----')
+    with open(menu_csv, 'r') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        for comic_data in csv_reader:
+            if re_pattern.search(comic_data[0]) != None:
+                print('Identity Number {} : {}'.format(identify_num, comic_data[0]))
+            identify_num += 1
+    print('------ END ------')
+
+
+def pycomic_list_chapters():
+    pass
+
+
+def pycomic_list_url():
+    pass
+
+
 def pycomic_download():
     pass
 
@@ -156,13 +210,7 @@ def pycomic_fetch_chapter():
     _check()
 
     # Find comic in menu.csv file
-    search_result = _search(comic_name)
-    if search_result == None:
-        logging.warning('No match to {} found.'.format(comic_name))
-        sys.exit(1)
-    comic = pycl.Comic(search_result[0], search_result[1], search_result[2])
-    comic.def_url(COMIC_999_URL)
-    logging.debug(comic)
+    comic = _comic_in_menu(comic_name)
 
     # Make requests
     page_req = requests.get(comic.url)
@@ -179,7 +227,6 @@ def pycomic_fetch_chapter():
     chapter_list = page_parse.select(css_selector)
 
     # Write file
-    comic.def_menu(PY_MENU)
     try:
         with open(comic.menu_csv, 'w') as csv_file:
             csv_writer = csv.writer(csv_file)
@@ -195,7 +242,86 @@ def pycomic_fetch_chapter():
 
 
 def pycomic_fetch_url():
-    pass
+    message = \
+    """
+    USAGE:
+        pycomic fetch-url COMICNAME IDENTITYNUM
+    NOTE:
+        use 'pycomic list-menu' command to get IDENTITYNUM
+    """
+    try:
+        comic_name = sys.argv[2]
+        request_identity = int(sys.argv[3])
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    _check()
+
+    # Find comic in menu.csv file
+    comic = _comic_in_menu(comic_name)
+    chapter_url, chapter_num = None, None
+
+    # URL to comic chapter
+    try:
+        with open(comic.menu_csv, 'r') as csv_file:
+            csv_reader = csv.reader(csv_file)
+            for identity_num, comic_data in enumerate(csv_reader):
+                if request_identity == identity_num:
+                    chapter_num, chapter_url = comic_data[0], comic_data[1]
+    except:
+        logging.warning('Failed to read file {}.'.format(comic.menu_csv))
+        sys.exit(1)
+    finally:
+        logging.debug('Chapter url: {}'.format(chapter_url))
+
+    # Open Firefox web driver
+    geckolog = 'geckodriver.log'
+    try:
+        firefox = webdriver.Firefox()
+        firefox.get(chapter_url)
+    except:
+        logging.warning('{} request failed.'.format(chapter_url))
+        firefox.close()
+        _geckolog_clean(geckolog)
+        sys.exit(1)
+
+    # Preparation for gather urls
+    last_page_selector = '#pageSelect option:nth-last-child(1)'
+    last_page_elem = firefox.find_element_by_css_selector(last_page_selector)
+    num_regex = re.compile(r'\d{1,3}')
+
+    try:
+        last_page = int(num_regex.search(last_page_elem.text).group())
+    except:
+        logging.warning('Failed to find last page of comic.')
+        firefox.close()
+        _geckolog_clean(geckolog)
+        sys.exit(1)
+
+    # Write urls to file
+    comic.def_chapter(PY_URL, chapter_num)
+    current_page = 1
+    try:
+        csv_file = open(comic.chapter_csv, 'w')
+        csv_writer = csv.writer(csv_file)
+        while True:
+            image_url = _get_image_url(firefox)
+            csv_writer.writerow((current_page, image_url))
+            print('Write page {} success - {}'.format(current_page, image_url))
+            if current_page == last_page:
+                break
+            next_page = firefox.find_element_by_id('next')
+            next_page.click()
+            current_page += 1
+    except:
+        logging.warning('Failed to write url to {} at page {}.'.format(comic.chapter_csv, current_page))
+        sys.exit(1)
+    finally:
+        csv_file.close()
+        firefox.close()
+        _geckolog_clean(geckolog)
+    print('{} fetch urls success.'.format(comic_name))
 
 
 def pycomic_search():
@@ -229,6 +355,25 @@ def _check_dir_existence(dir):
             raise
 
 
+def _comic_in_menu(comic_name):
+    """
+    Find if comic_name is in menu.csv file
+    If Exist:
+        return Comic class object
+    If not Exist:
+        Inform user and quit program
+    """
+    search_result = _search(comic_name)
+    if search_result == None:
+        logging.warning('No match to {} found.'.format(comic_name))
+        sys.exit(1)
+    comic = pycl.Comic(search_result[0], search_result[1], search_result[2])
+    comic.def_url(COMIC_999_URL)
+    comic.def_menu(PY_MENU)
+    logging.debug(comic)
+    return comic
+
+
 def _search(name):
     menu_csv = os.path.join(PY_MENU, MENU_CSV)
 
@@ -238,6 +383,39 @@ def _search(name):
             if comic_data[0].lower() == name.lower() or comic_data[1].lower() == name.lower():
                 return comic_data
     return None
+
+
+
+def _get_image_url(driver):
+    img_id = 'manga'
+    img_attr = 'src'
+    img_tag = 'img'
+
+    # Find image information
+    manga_id = driver.find_element_by_id(img_id)
+    logging.debug('Manga ID: {}'.format(manga_id))
+    image_webpage = manga_id.get_attribute(img_attr)
+    logging.debug('Image Webpage: {}'.format(image_webpage))
+    # Open page in new tab
+    driver.execute_script("window.open('{page}');".format(page=image_webpage))
+    time.sleep(1.2)
+    driver.switch_to.window(driver.window_handles[1])
+    # Get image url
+    image_tag = driver.find_element_by_tag_name(img_tag)
+    logging.debug('Image Tag: {}'.format(image_tag))
+    image_url = image_tag.get_attribute(img_attr)
+    logging.debug('Image URL: {}'.format(image_url))
+    # Close tab and return focus on first tab
+    driver.close()
+    driver.switch_to.window(driver.window_handles[0])
+
+    return image_url
+
+
+def _geckolog_clean(geckolog):
+    gecko_log = os.path.abspath(geckolog)
+    if os.path.isfile(gecko_log):
+        os.remove(gecko_log)
 
 
 
