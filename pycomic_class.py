@@ -26,6 +26,9 @@ class Comic():
         filename = self.english + '_menu.csv'
         self.menu_csv = os.path.join(path, filename)
 
+    def def_chapter_dir(self, path):
+        self.chapter_dir = os.path.join(path,self.english)
+
     def def_chapter(self, path, number):
         filename = self.english + '_' + number + '.csv'
-        self.chapter_csv = os.path.join(path, filename)
+        self.chapter_csv = os.path.join(path, self.english, filename)

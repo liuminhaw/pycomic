@@ -74,7 +74,7 @@ def pycomic_help():
         pycomic list [PATTERN]
         pycomic list-menu COMICNAME [PATTERN]
         pycomic list-chapters
-        pycomic list-url COMICNAME
+        pycomic list-url COMICNAME [PATTERN]
         pycomic make-pdf COMICNAME CHAPTER
         pycomic search COMICNAME
     """
@@ -188,7 +188,38 @@ def pycomic_list_chapters():
 
 
 def pycomic_list_url():
-    pass
+    message = \
+    """
+    USAGE:
+        pycomic list-url COMICNAME [PATTERN]
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    try:
+        pattern = sys.argv[3]
+    except IndexError:
+        pattern = ''
+
+    _check()
+
+    # Find comic in menu.csv file
+    comic = _comic_in_menu(comic_name)
+    comic.def_chapter_dir(PY_URL)
+
+    # Search existing url file
+    re_pattern = re.compile(r'.*{}.*'.format(pattern))
+    _check_dir_existence(comic.chapter_dir)
+    file_list = os.listdir(comic.chapter_dir)
+    file_list.sort()
+    print('----- START -----')
+    for file in file_list:
+        if re_pattern.search(file) != None:
+            print('{}'.format(file))
+    print('------ END ------')
 
 
 def pycomic_download():
@@ -301,6 +332,8 @@ def pycomic_fetch_url():
 
     # Write urls to file
     comic.def_chapter(PY_URL, chapter_num)
+    comic.def_chapter_dir(PY_URL)
+    _check_dir_existence(comic.chapter_dir)
     current_page = 1
     try:
         csv_file = open(comic.chapter_csv, 'w')
