@@ -5,8 +5,8 @@ Author:
     haw
 """
 
-import sys, os, errno
-import csv, re, time
+import sys, os, errno, shutil
+import csv, re, time, datetime
 import requests
 import pycomic_class as pycl
 from pathlib import Path
@@ -67,7 +67,7 @@ def pycomic_help():
     """
     USAGE:
         pycomic add ENGLISHNAME CHINESENAME NUMBER
-        pycomic download COMICNAME CHAPTER
+        pycomic download COMICNAME FILETAG
         pycomic fetch-chapter COMICNAME
         pycomic fetch-url COMICNAME IDENTITYNUM
         pycomic help
@@ -211,19 +211,98 @@ def pycomic_list_url():
     comic.def_chapter_dir(PY_URL)
 
     # Search existing url file
-    re_pattern = re.compile(r'.*{}.*'.format(pattern))
+    re_pattern = re.compile(r'.*{}.*'.format(pattern), re.IGNORECASE)
+    file_tag = 0
     _check_dir_existence(comic.chapter_dir)
     file_list = os.listdir(comic.chapter_dir)
     file_list.sort()
     print('----- START -----')
     for file in file_list:
         if re_pattern.search(file) != None:
-            print('{}'.format(file))
+            print('FILE TAG {} : {}'.format(file_tag, file))
+        file_tag += 1
     print('------ END ------')
 
 
 def pycomic_download():
-    pass
+    message = \
+    """
+    USAGE:
+        pycomic download COMICNAME FILETAG
+    NOTE:
+        use 'pycomic list-url' command to get FILETAG
+    """
+    try:
+        comic_name = sys.argv[2]
+        request_tag = int(sys.argv[3])
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    _check()
+
+    # Find comic in menu.csv file
+    comic = _comic_in_menu(comic_name)
+    comic.def_chapter_dir(PY_URL)
+    comic.def_book_dir(PY_BOOKS)
+    _check_dir_existence(comic.chapter_dir)
+    _check_dir_existence(comic.book_dir)
+
+    # Find correct comic url csv file
+    file_list = os.listdir(comic.chapter_dir)
+    file_list.sort()
+    for file_tag, file in enumerate(file_list):
+        if file_tag == request_tag:
+            # filename = os.path.splitext(file)[0]
+            filename = file
+            logging.debug('Filename: {}'.format(filename))
+
+    try:
+        comic.def_book(PY_BOOKS, os.path.splitext(filename)[0])
+        logging.debug('{}'.format(comic.book))
+    except NameError:
+        logging.warning('File Tag {} not exist.'.format(request_tag))
+        sys.exit(1)
+
+    # Make sure not to write same chapter repeatly
+    try:
+        os.mkdir(comic.book)
+    except FileExistsError:
+        logging.warning('Directory {} already exist.'.format(comic.book))
+        sys.exit(1)
+
+    # Write images
+    user_agent = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101 Firefox/59.0'}
+
+    with open(os.path.join(comic.chapter_dir, filename), 'r') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        for page, url in csv_reader:
+            try_times = 0
+            img_name = os.path.splitext(filename)[0] + '-' + datetime.datetime.now().strftime('%Y%m%dT%H%M%SMS%f') + '.' + url.split('.')[-1]
+            img_path = os.path.join(comic.book, img_name)
+
+            while try_times <= 10:
+                img_request = requests.get(url, headers=user_agent)
+                try:
+                    img_request.raise_for_status()
+                except:
+                    logging.warning('Page {} - {} request failed.'.format(page, url))
+                    try_times += 1
+                    time.sleep(1)
+                else:
+                    with open(img_path, 'wb') as write_file:
+                        for chunk in img_request.iter_content(10000):
+                            write_file.write(chunk)
+                        print('Write page {} - {} image success.'.format(page, img_name))
+                    time.sleep(1)
+                    break
+            else:
+                logging.warning('Exceed try time limit.')
+                shutil.rmtree(comic.book)
+                logging.warning('Remove directory {}.'.format(comic.book))
+                sys.exit(1)
+
+    print('Write {} complete.'.format(comic.book))
 
 
 def pycomic_fetch_chapter():
@@ -300,6 +379,11 @@ def pycomic_fetch_url():
             for identity_num, comic_data in enumerate(csv_reader):
                 if request_identity == identity_num:
                     chapter_num, chapter_url = comic_data[0], comic_data[1]
+            if chapter_num == None or chapter_url ==None:
+                raise Warning
+    except Warning:
+        logging.warning('Identity Number {} not exist.'.format(request_identity))
+        sys.exit(1)
     except:
         logging.warning('Failed to read file {}.'.format(comic.menu_csv))
         sys.exit(1)
