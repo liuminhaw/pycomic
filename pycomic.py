@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """
 Program:
     Python comic downloader
@@ -15,7 +16,7 @@ from selenium import webdriver
 
 import logging
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
-logging.disable(logging.INFO)
+# logging.disable(logging.INFO)
 
 # Pre-defined
 HOME = str(Path.home())
@@ -173,18 +174,53 @@ def pycomic_list_menu():
     menu_csv = comic.menu_csv
     re_pattern = re.compile(r'.*{}.*'.format(pattern))
     identify_num = 0
-    print('----- START -----')
-    with open(menu_csv, 'r') as csv_file:
-        csv_reader = csv.reader(csv_file)
-        for comic_data in csv_reader:
-            if re_pattern.search(comic_data[0]) != None:
-                print('Identity Number {} : {}'.format(identify_num, comic_data[0]))
-            identify_num += 1
-    print('------ END ------')
+    try:
+        with open(menu_csv, 'r') as csv_file:
+            print('----- START -----')
+            csv_reader = csv.reader(csv_file)
+            for comic_data in csv_reader:
+                if re_pattern.search(comic_data[0]) != None:
+                    print('Identity Number {} : {}'.format(identify_num, comic_data[0]))
+                identify_num += 1
+            print('------ END ------')
+    except FileNotFoundError:
+        logging.warning('File {} not exist.'.format(menu_csv))
+        sys.exit(1)
 
 
 def pycomic_list_chapters():
-    pass
+    message = \
+    """
+    USAGE:
+        pycomic list-chapter COMICNAME [PATTERN]
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    try:
+        pattern = sys.argv[3]
+    except IndexError:
+        pattern = ''
+
+    _check()
+
+    # Find comic in menu.csv file
+    comic = _comic_in_menu(comic_name)
+    comic.def_book_dir(PY_BOOKS)
+
+    # Show exist chapter file
+    re_pattern = re.compile(r'.*{}.*'.format(pattern), re.IGNORECASE)
+    _check_dir_existence(comic.book_dir)
+    dir_list = os.listdir(comic.book_dir)
+    dir_list.sort()
+    print('----- START -----')
+    for dir in dir_list:
+        if re_pattern.search(dir) != None:
+            print('Directory: {}'.format(dir))
+    print('------ END ------')
 
 
 def pycomic_list_url():
@@ -419,11 +455,19 @@ def pycomic_fetch_url():
     comic.def_chapter_dir(PY_URL)
     _check_dir_existence(comic.chapter_dir)
     current_page = 1
+    try_times = 0
     try:
         csv_file = open(comic.chapter_csv, 'w')
         csv_writer = csv.writer(csv_file)
         while True:
+            # Try _get_image_url for multiple times if failed
+            if try_times > 4:
+                raise Warning
             image_url = _get_image_url(firefox)
+            if image_url == 'Failed':
+                try_times += 1
+                continue
+            # Get image url successful
             csv_writer.writerow((current_page, image_url))
             print('Write page {} success - {}'.format(current_page, image_url))
             if current_page == last_page:
@@ -431,6 +475,8 @@ def pycomic_fetch_url():
             next_page = firefox.find_element_by_id('next')
             next_page.click()
             current_page += 1
+    except Warning:
+        logging.warning('Try getting url at page {} exceed limit times'.format(current_page))
     except:
         logging.warning('Failed to write url to {} at page {}.'.format(comic.chapter_csv, current_page))
         sys.exit(1)
@@ -509,22 +555,34 @@ def _get_image_url(driver):
     img_tag = 'img'
 
     # Find image information
-    manga_id = driver.find_element_by_id(img_id)
-    logging.debug('Manga ID: {}'.format(manga_id))
-    image_webpage = manga_id.get_attribute(img_attr)
-    logging.debug('Image Webpage: {}'.format(image_webpage))
-    # Open page in new tab
-    driver.execute_script("window.open('{page}');".format(page=image_webpage))
-    time.sleep(1.2)
-    driver.switch_to.window(driver.window_handles[1])
-    # Get image url
-    image_tag = driver.find_element_by_tag_name(img_tag)
-    logging.debug('Image Tag: {}'.format(image_tag))
-    image_url = image_tag.get_attribute(img_attr)
-    logging.debug('Image URL: {}'.format(image_url))
-    # Close tab and return focus on first tab
-    driver.close()
-    driver.switch_to.window(driver.window_handles[0])
+    image_url = 'Failed'
+    try:
+        manga_id = driver.find_element_by_id(img_id)
+        logging.debug('Manga ID: {}'.format(manga_id))
+        image_webpage = manga_id.get_attribute(img_attr)
+        logging.debug('Image Webpage: {}'.format(image_webpage))
+        # Open page in new tab
+        driver.execute_script("window.open('{page}');".format(page=image_webpage))
+        time.sleep(1.2)
+        driver.switch_to.window(driver.window_handles[1])
+        # Get image url
+        image_tag = driver.find_element_by_tag_name(img_tag)
+        logging.debug('Image Tag: {}'.format(image_tag))
+        image_url = image_tag.get_attribute(img_attr)
+        logging.debug('Image URL: {}'.format(image_url))
+    except:
+        logging.debug('Some Error occurs in _get_image_url')
+    finally:
+        # Close tab and return focus on first tab
+        logging.debug('Handles: {}'.format(driver.window_handles))
+        for handle in driver.window_handles[1:]:
+            logging.debug('Handle: {}'.format(handle))
+            driver.switch_to.window(handle)
+            logging.debug('Switch handle')
+            driver.close()
+        logging.debug('Closing tags success.')
+        driver.switch_to.window(driver.window_handles[0])
+        logging.debug('_get_image_url Success.')
 
     return image_url
 
