@@ -23,16 +23,24 @@ New **pycomic.py** program to replace the older programs
 
 ##### Methods
 - add
+- download
 - fetch-chapter
 - fetch-url
 - help
 - list
+- list-chapters
 - list-menu
 
 ##### add
 Store comic information to local.
 
     pycomic add ENGLISHNAME CHINESENAME NUMBER
+
+##### download
+Download comic
+Use `pycomic list-url` command to get `FILETAG`
+
+    pycomic download COMICNAME FILETAG
 
 ##### fetch-chapter
 Store chapter link of comic to local
@@ -51,13 +59,20 @@ Show available command options
     pycomic help
 
 ##### list
-List stored comics
-Optional `COMICNAME` search for matching
+List stored comics  
+Optional `PATTERN` search for matching
 
     pycomic list [PATTERN]
 
+##### list-chapters
+List chapters that are stored in local  
+Show matching pattern if `PATTERN` is provided
+
+    pycomic list-chapter COMICNAME [PATTERN]
+
+
 ##### list-menu
 List comic's chapter menu (Find `IDENTITYNUM` using `fetch-url`)  
-Show mathcing pattern if `PATTERN` is provided
+Show matching pattern if `PATTERN` is provided
 
     pycomic list-menu COMICNAME [PATTERN]

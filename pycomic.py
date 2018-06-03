@@ -16,7 +16,7 @@ from selenium import webdriver
 
 import logging
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
-# logging.disable(logging.INFO)
+logging.disable(logging.INFO)
 
 # Pre-defined
 HOME = str(Path.home())
@@ -174,18 +174,32 @@ def pycomic_list_menu():
     menu_csv = comic.menu_csv
     re_pattern = re.compile(r'.*{}.*'.format(pattern))
     identify_num = 0
+    remind_message = None
+
     try:
         with open(menu_csv, 'r') as csv_file:
+            last_update = None
             print('----- START -----')
             csv_reader = csv.reader(csv_file)
             for comic_data in csv_reader:
                 if re_pattern.search(comic_data[0]) != None:
+                    # Make sure menu include last update in the newer version
+                    try:
+                        last_update = comic_data[2]
+                    except IndexError:
+                        remind_message = '{} is an old version.\nPlease update with fetch-chapter command.'.format(menu_csv)
                     print('Identity Number {} : {}'.format(identify_num, comic_data[0]))
                 identify_num += 1
+            if last_update is not None:
+                print('Last Update: {}'.format(last_update))
             print('------ END ------')
     except FileNotFoundError:
         logging.warning('File {} not exist.'.format(menu_csv))
         sys.exit(1)
+
+    # Remind for update
+    if remind_message is not None:
+        print(remind_message)
 
 
 def pycomic_list_chapters():
@@ -369,8 +383,10 @@ def pycomic_fetch_chapter():
 
     # Parse information
     css_selector = 'div.chapter-list ul li a'
+    date_selector = 'ul.detail-list li.status span'
     page_parse = BeautifulSoup(page_req.text, 'html.parser')
     chapter_list = page_parse.select(css_selector)
+    date = page_parse.select(date_selector)
 
     # Write file
     try:
@@ -379,7 +395,7 @@ def pycomic_fetch_chapter():
             for data in chapter_list:
                 chapter_url = COMIC_999_URL_HOME + data.get('href')
                 chapter_title = data.find('span').text
-                csv_writer.writerow((chapter_title, chapter_url))
+                csv_writer.writerow((chapter_title, chapter_url, date[-1].text))
     except:
         logging.warning('Failed to write file {}.'.format(comic.menu_csv))
         sys.exit(1)
