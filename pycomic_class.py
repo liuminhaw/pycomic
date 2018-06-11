@@ -26,6 +26,7 @@ class Comic():
         filename = self.english + '_menu.csv'
         self.menu_csv = os.path.join(path, filename)
 
+    # pycomic/url
     def def_chapter_dir(self, path):
         self.chapter_dir = os.path.join(path,self.english)
 
@@ -33,8 +34,17 @@ class Comic():
         filename = self.english + '_' + chapter + '.csv'
         self.chapter_csv = os.path.join(path, self.english, filename)
 
+    # pycomic/books
     def def_book_dir(self, path):
         self.book_dir = os.path.join(path, self.english)
 
     def def_book(self, path, name):
         self.book = os.path.join(path, self.english, name)
+
+    # pycomic/pdf
+    def def_pdf_dir(self, path):
+        self.pdf_dir = os.path.join(path, self.english)
+
+    def def_pdf(self, path, name):
+        filename = name + '.pdf'
+        self.pdf = os.path.join(path, self.english, filename)

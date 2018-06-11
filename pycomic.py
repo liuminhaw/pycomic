@@ -13,6 +13,7 @@ import pycomic_class as pycl
 from pathlib import Path
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from PIL import Image
 
 import logging
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
@@ -23,6 +24,7 @@ HOME = str(Path.home())
 PY_MENU = os.path.join(HOME, 'pycomic', 'menu')
 PY_URL = os.path.join(HOME, 'pycomic', 'url')
 PY_BOOKS = os.path.join(HOME, 'pycomic', 'books')
+PY_PDF = os.path.join(HOME, 'pycomic', 'pdf')
 MENU_CSV = 'menu.csv'
 
 COMIC_999_URL_HOME = 'https://www.999comics.com'
@@ -34,6 +36,7 @@ def main():
     logging.debug('Menu: {}'.format(PY_MENU))
     logging.debug('URL: {}'.format(PY_URL))
     logging.debug('Books: {}'.format(PY_BOOKS))
+    logging.debug('PDF: {}'.format(PY_PDF))
 
     if len(sys.argv) == 1:
         pycomic_help()
@@ -57,8 +60,6 @@ def main():
         pycomic_list_url()
     elif sys.argv[1] == 'make-pdf':
         pycomic_make_pdf()
-    elif sys.argv[1] == 'search':
-        pycomic_search()
     else:
         pycomic_help()
 
@@ -76,7 +77,7 @@ def pycomic_help():
         pycomic list-menu COMICNAME [PATTERN]
         pycomic list-chapters
         pycomic list-url COMICNAME [PATTERN]
-        pycomic make-pdf COMICNAME CHAPTER
+        pycomic make-pdf COMICNAME DIRECTORYTAG
         pycomic search COMICNAME
     """
     print(message)
@@ -231,9 +232,9 @@ def pycomic_list_chapters():
     dir_list = os.listdir(comic.book_dir)
     dir_list.sort()
     print('----- START -----')
-    for dir in dir_list:
+    for dir_tag, dir in enumerate(dir_list):
         if re_pattern.search(dir) != None:
-            print('Directory: {}'.format(dir))
+            print('Directory Tag {}: {}'.format(dir_tag, dir))
     print('------ END ------')
 
 
@@ -322,7 +323,8 @@ def pycomic_download():
         sys.exit(1)
 
     # Write images
-    user_agent = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101 Firefox/59.0'}
+    # user_agent = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101 Firefox/59.0'}
+    user_agent = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299'}
 
     with open(os.path.join(comic.chapter_dir, filename), 'r') as csv_file:
         csv_reader = csv.reader(csv_file)
@@ -503,12 +505,75 @@ def pycomic_fetch_url():
     print('{} fetch urls success.'.format(comic_name))
 
 
-def pycomic_search():
-    pass
-
-
 def pycomic_make_pdf():
-    pass
+    message = \
+    """
+    USAGE:
+        pycomic make-pdf COMICNAME DIRECTORYTAG
+    NOTE:
+        Get DIRECTORYTAG value from list-chapters command
+    """
+    try:
+        comic_name = sys.argv[2]
+        dir_tag = int(sys.argv[3])
+    except:
+        print(message)
+        sys.exit(1)
+
+    _check()
+
+    # Find comic in menu.csv file
+    comic = _comic_in_menu(comic_name)
+    comic.def_book_dir(PY_BOOKS)
+    book_name = None
+
+    # Get directory to for making pdf
+    dir_list = os.listdir(comic.book_dir)
+    dir_list.sort()
+    try:
+        for tag_num, dir in enumerate(dir_list):
+            if dir_tag == tag_num:
+                book_name = dir
+        if book_name == None:
+            raise Warning
+    except Warning:
+        logging.warning('Directory Tag {} not exist.'.format(dir_tag))
+        sys.exit(1)
+    except:
+        logging.warning('Failed to get target directory.')
+        sys.exit(1)
+    else:
+        logging.debug('Book Name: {}'.format(book_name))
+        comic.def_book(PY_BOOKS, book_name)
+
+    # Preparation for making pdf
+    comic.def_pdf_dir(PY_PDF)
+    comic.def_pdf(PY_PDF, book_name)
+    logging.debug('PDF directory: {}'.format(comic.pdf_dir))
+    logging.debug('PDF File: {}'.format(comic.pdf))
+
+    _check_dir_existence(comic.pdf_dir)
+
+    if os.path.isfile(comic.pdf):
+        logging.warning('File {} already exist.'.format(comic.pdf))
+        sys.exit(1)
+
+    # Making pdf file
+    pages = os.listdir(comic.book)
+    pages.sort()
+    for index, page in enumerate(pages):
+        image = Image.open(os.path.join(comic.book, page))
+        try:
+            image.save(comic.pdf, 'PDF', resolution=100, save_all=True, append=True)
+        except IOError:
+            image.save(comic.pdf, 'PDF', resolution=100, save_all=True)
+        except:
+            os.remove(comic.pdf)
+            logging.warning('Failed to make PDF, some problem occurs.')
+            sys.exit(1)
+        print('Write page {:3} Success.'.format(index+1))
+
+    print('Make PDF {} success.'.format(book_name))
 
 
 
@@ -518,6 +583,7 @@ def _check():
     _check_dir_existence(PY_MENU)
     _check_dir_existence(PY_URL)
     _check_dir_existence(PY_BOOKS)
+    _check_dir_existence(PY_PDF)
 
     if not os.path.exists(menu_csv):
         create_file = open(menu_csv, 'w')

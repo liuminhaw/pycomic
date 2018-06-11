@@ -30,6 +30,7 @@ New **pycomic.py** program to replace the older programs
 - list
 - list-chapters
 - list-menu
+- make-pdf
 
 ##### add
 Store comic information to local.
@@ -70,9 +71,14 @@ Show matching pattern if `PATTERN` is provided
 
     pycomic list-chapter COMICNAME [PATTERN]
 
-
 ##### list-menu
-List comic's chapter menu (Find `IDENTITYNUM` using `fetch-url`)  
+List comic's chapter menu  
 Show matching pattern if `PATTERN` is provided
 
     pycomic list-menu COMICNAME [PATTERN]
+
+##### make-pdf
+Use downloaded comic images to make pdf file
+Use `pycomic list-chapters` to find `DIRECTORYTAG`
+
+    pycomic make-pdf COMICNAME DIRECTORYTAG
