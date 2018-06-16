@@ -54,6 +54,8 @@ def main():
         pycomic_list()
     elif sys.argv[1] == 'list-menu':
         pycomic_list_menu()
+    elif sys.argv[1] == 'list-pdf':
+        pycomic_list_pdf()
     elif sys.argv[1] == 'list-chapters':
         pycomic_list_chapters()
     elif sys.argv[1] == 'list-url':
@@ -74,11 +76,11 @@ def pycomic_help():
         pycomic fetch-url COMICNAME IDENTITYNUM
         pycomic help
         pycomic list [PATTERN]
-        pycomic list-menu COMICNAME [PATTERN]
         pycomic list-chapters
+        pycomic list-menu COMICNAME [PATTERN]
+        pycomic list-pdf COMICNAME [PATTERN]
         pycomic list-url COMICNAME [PATTERN]
         pycomic make-pdf COMICNAME DIRECTORYTAG
-        pycomic search COMICNAME
     """
     print(message)
     sys.exit(1)
@@ -235,6 +237,41 @@ def pycomic_list_chapters():
     for dir_tag, dir in enumerate(dir_list):
         if re_pattern.search(dir) != None:
             print('Directory Tag {}: {}'.format(dir_tag, dir))
+    print('------ END ------')
+
+
+def pycomic_list_pdf():
+    message = \
+    """
+    USAGE:
+        pycomic list-pdf COMICNAME [PATTERN]
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    try:
+        pattern = sys.argv[3]
+    except IndexError:
+        pattern = ''
+
+    _check()
+
+    # See if comic exist
+    comic = _comic_in_menu(comic_name)
+    comic.def_pdf_dir(PY_PDF)
+
+    # Search and show existing pdf files
+    re_pattern = re.compile(r'.*{}.*'.format(pattern), re.IGNORECASE)
+    _check_dir_existence(comic.pdf_dir)
+    file_list = os.listdir(comic.pdf_dir)
+    file_list.sort()
+    print('----- START -----')
+    for file in file_list:
+        if re_pattern.search(file) != None:
+            print('Comic Book: {}'.format(file))
     print('------ END ------')
 
 

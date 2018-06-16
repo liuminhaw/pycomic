@@ -2,23 +2,7 @@
 #### Program to download and save comic to local disk
 Fetching comic from **999comic** website
 
-### Version 0.2
-Give the number that represent the comic and fetch URL of each chapter
-
-    comic999_chapter_url.py OUTPUTFILEPATH COMICNUMBER
-
-Give an url of comic, scrape through and get URLs of each page image.  
-Add optional PAGENUM to specify the starting page.
-
-    comic999_url.py SITEURL OUTPUTFILEPATH [PAGENUM]
-
-Given a file with URLs in it, download all images of those URLs  
-Add optional PAGENUM to specify the starting page.
-
-    comic_downloader.py URLFILEPATH OUTPUTDIR [PAGENUM]
-
-
-### In Development
+### Version 0.9
 New **pycomic.py** program to replace the older programs
 
 ##### Methods
@@ -29,6 +13,7 @@ New **pycomic.py** program to replace the older programs
 - help
 - list
 - list-chapters
+- list-pdf
 - list-menu
 - make-pdf
 
@@ -76,6 +61,12 @@ List comic's chapter menu
 Show matching pattern if `PATTERN` is provided
 
     pycomic list-menu COMICNAME [PATTERN]
+
+##### list-pdf
+List pdf files of comic that is stored
+Show matching pattern if `PATTERN` is provided
+
+    pycomic list-pdf COMICNAME [PATTERN]
 
 ##### make-pdf
 Use downloaded comic images to make pdf file
