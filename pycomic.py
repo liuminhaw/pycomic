@@ -21,10 +21,10 @@ logging.disable(logging.INFO)
 
 # Pre-defined
 HOME = str(Path.home())
-PY_MENU = os.path.join(HOME, 'pycomic', 'menu')
-PY_URL = os.path.join(HOME, 'pycomic', 'url')
-PY_BOOKS = os.path.join(HOME, 'pycomic', 'books')
-PY_PDF = os.path.join(HOME, 'pycomic', 'pdf')
+PY_MENU = os.path.join(HOME, 'pycomic_backup', 'menu')
+PY_URL = os.path.join(HOME, 'pycomic_backup', 'url')
+PY_BOOKS = os.path.join(HOME, 'pycomic_backup', 'books')
+PY_PDF = os.path.join(HOME, 'pycomic_backup', 'pdf')
 MENU_CSV = 'menu.csv'
 
 COMIC_999_URL_HOME = 'https://www.999comics.com'
@@ -142,7 +142,7 @@ def pycomic_list():
 
     print('----- START -----')
     menu_csv = os.path.join(PY_MENU, MENU_CSV)
-    re_pattern = re.compile(r'.*{}.*'.format(pattern))
+    re_pattern = re.compile(r'.*{}.*'.format(pattern), re.IGNORECASE)
     with open(menu_csv, 'r') as csv_file:
         csv_reader = csv.reader(csv_file)
         for comic_data in csv_reader:
@@ -331,6 +331,9 @@ def pycomic_download():
     except IndexError:
         print(message)
         sys.exit(1)
+    except ValueError:
+        logging.warning("Please enter numeric value for FILETAG")
+        sys.exit(1)
 
     _check()
 
@@ -470,6 +473,10 @@ def pycomic_fetch_url():
     except IndexError:
         print(message)
         sys.exit(1)
+    except ValueError:
+        logging.warning("Please enter numeric value for IDENTITYNUM")
+        sys.exit(1)
+
 
     _check()
 
@@ -567,8 +574,11 @@ def pycomic_make_pdf():
     try:
         comic_name = sys.argv[2]
         dir_tag = int(sys.argv[3])
-    except:
+    except IndexError:
         print(message)
+        sys.exit(1)
+    except ValueError:
+        logging.warning("Please enter numeric value for DIRECTORYTAG")
         sys.exit(1)
 
     _check()
