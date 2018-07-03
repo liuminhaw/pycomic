@@ -181,7 +181,7 @@ def pycomic_list_menu():
 
     try:
         with open(menu_csv, 'r') as csv_file:
-            last_update = None
+            last_update, comic_state = None, None
             print('----- START -----')
             csv_reader = csv.reader(csv_file)
             for comic_data in csv_reader:
@@ -189,20 +189,25 @@ def pycomic_list_menu():
                     # Make sure menu include last update in the newer version
                     try:
                         last_update = comic_data[2]
+                        comic_state = comic_data[3]
                     except IndexError:
                         remind_message = '{} is an old version.\nPlease update with fetch-chapter command.'.format(menu_csv)
                     print('Identity Number {} : {}'.format(identify_num, comic_data[0]))
                 identify_num += 1
+
+            print('------ INFO ------')
             if last_update is not None:
                 print('Last Update: {}'.format(last_update))
-            print('------ END ------')
+            if comic_state is not None:
+                print('Comic Status: {}'.format(comic_state))
+
+            if remind_message is not None:
+                print('')
+                print(remind_message)
+            print('------- END ------')
     except FileNotFoundError:
         logging.warning('File {} not exist.'.format(menu_csv))
         sys.exit(1)
-
-    # Remind for update
-    if remind_message is not None:
-        print(remind_message)
 
 
 def pycomic_list_chapters():
@@ -371,8 +376,8 @@ def pycomic_download():
             img_path = os.path.join(comic.book, img_name)
 
             while try_times <= 10:
-                img_request = requests.get(url, headers=user_agent)
                 try:
+                    img_request = requests.get(url, headers=user_agent)
                     img_request.raise_for_status()
                 except:
                     logging.warning('Page {} - {} request failed.'.format(page, url))
@@ -423,9 +428,18 @@ def pycomic_fetch_chapter():
     # Parse information
     css_selector = 'div.chapter-list ul li a'
     date_selector = 'ul.detail-list li.status span'
+    status_selector = 'ul.detail-list li.status span span.dgreen'
     page_parse = BeautifulSoup(page_req.text, 'html.parser')
+
     chapter_list = page_parse.select(css_selector)
     date = page_parse.select(date_selector)
+    status = page_parse.select(status_selector)
+
+    # Determine comic status (In progress or Complete)
+    try:
+        comic_state = status[0].text
+    except:
+        comic_state = date[-2].text
 
     # Write file
     try:
@@ -434,7 +448,7 @@ def pycomic_fetch_chapter():
             for data in chapter_list:
                 chapter_url = COMIC_999_URL_HOME + data.get('href')
                 chapter_title = data.find('span').text
-                csv_writer.writerow((chapter_title, chapter_url, date[-1].text))
+                csv_writer.writerow((chapter_title, chapter_url, date[-1].text, comic_state))
     except:
         logging.warning('Failed to write file {}.'.format(comic.menu_csv))
         sys.exit(1)
