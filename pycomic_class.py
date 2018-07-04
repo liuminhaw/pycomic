@@ -3,10 +3,10 @@ Class definition for pycomic
 """
 
 import os
+import logging_class as logcl
 
-import logging
-logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
-#logging.disable(logging.INFO)
+
+logger = logcl.PersonalLog('pycomic_class')
 
 class Comic():
 
@@ -20,7 +20,7 @@ class Comic():
 
     def def_url(self, url):
         self.url = url + self.number + '/'
-        logging.debug('Comic URL: {}'.format(self.url))
+        logger.debug('Comic URL: {}'.format(self.url))
 
     def def_menu(self, path):
         filename = self.english + '_menu.csv'

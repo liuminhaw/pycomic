@@ -9,22 +9,27 @@ Author:
 import sys, os, errno, shutil
 import csv, re, time, datetime
 import requests
-import pycomic_class as pycl
+import logging
+
 from pathlib import Path
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from PIL import Image
 
-import logging
-logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
-logging.disable(logging.INFO)
+import pycomic_class as pycl
+import user_agent_class as agentcl
+import logging_class as logcl
+
+
+logger = logcl.PersonalLog('pycomic')
+logging.disable(logging.DEBUG)
 
 # Pre-defined
 HOME = str(Path.home())
-PY_MENU = os.path.join(HOME, 'pycomic_backup', 'menu')
-PY_URL = os.path.join(HOME, 'pycomic_backup', 'url')
-PY_BOOKS = os.path.join(HOME, 'pycomic_backup', 'books')
-PY_PDF = os.path.join(HOME, 'pycomic_backup', 'pdf')
+PY_MENU = os.path.join(HOME, 'pycomic', 'menu')
+PY_URL = os.path.join(HOME, 'pycomic', 'url')
+PY_BOOKS = os.path.join(HOME, 'pycomic', 'books')
+PY_PDF = os.path.join(HOME, 'pycomic', 'pdf')
 MENU_CSV = 'menu.csv'
 
 COMIC_999_URL_HOME = 'https://www.999comics.com'
@@ -33,10 +38,10 @@ COMIC_999_URL = 'https://www.999comics.com/comic/'
 
 def main():
 
-    logging.debug('Menu: {}'.format(PY_MENU))
-    logging.debug('URL: {}'.format(PY_URL))
-    logging.debug('Books: {}'.format(PY_BOOKS))
-    logging.debug('PDF: {}'.format(PY_PDF))
+    logger.debug('Menu: {}'.format(PY_MENU))
+    logger.debug('URL: {}'.format(PY_URL))
+    logger.debug('Books: {}'.format(PY_BOOKS))
+    logger.debug('PDF: {}'.format(PY_PDF))
 
     if len(sys.argv) == 1:
         pycomic_help()
@@ -111,20 +116,20 @@ def pycomic_add():
         for comic_data in csv_reader:
             line_number += 1
             if english_name in comic_data:
-                logging.warning('{} in {}. Line: {}'.format(english_name, comic_data, line_number))
+                logger.info('{} in {}. Line: {}'.format(english_name, comic_data, line_number))
                 sys.exit(1)
             if chinese_name in comic_data:
-                logging.warning('{} in {}. Line: {}'.format(chinese_name, comic_data, line_number))
+                logger.info('{} in {}. Line: {}'.format(chinese_name, comic_data, line_number))
                 sys.exit(1)
             if number in comic_data:
-                logging.warning('{} in {}. Line: {}'.format(number, comic_data, line_number))
+                logger.info('{} in {}. Line: {}'.format(number, comic_data, line_number))
                 sys.exit(1)
 
     # Write data to file
     with open(menu_csv, 'a') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(data)
-    print('Write {} to {} success.'.format(data, menu_csv))
+    logger.info('Write {} to {} success.'.format(data, menu_csv))
 
 
 def pycomic_list():
@@ -206,7 +211,7 @@ def pycomic_list_menu():
                 print(remind_message)
             print('------- END ------')
     except FileNotFoundError:
-        logging.warning('File {} not exist.'.format(menu_csv))
+        logger.warning('File {} not exist.'.format(menu_csv))
         sys.exit(1)
 
 
@@ -332,7 +337,7 @@ def pycomic_download():
         print(message)
         sys.exit(1)
     except ValueError:
-        logging.warning("Please enter numeric value for FILETAG")
+        logger.info("Please enter numeric value for FILETAG")
         sys.exit(1)
 
     _check()
@@ -351,25 +356,26 @@ def pycomic_download():
         if file_tag == request_tag:
             # filename = os.path.splitext(file)[0]
             filename = file
-            logging.debug('Filename: {}'.format(filename))
+            logger.debug('Filename: {}'.format(filename))
 
     try:
         comic.def_book(PY_BOOKS, os.path.splitext(filename)[0])
-        logging.debug('{}'.format(comic.book))
+        logger.debug('{}'.format(comic.book))
     except NameError:
-        logging.warning('File Tag {} not exist.'.format(request_tag))
+        logger.warning('File Tag {} not exist.'.format(request_tag))
         sys.exit(1)
 
     # Make sure not to write same chapter repeatly
     try:
         os.mkdir(comic.book)
     except FileExistsError:
-        logging.warning('Directory {} already exist.'.format(comic.book))
+        logger.warning('Directory {} already exist.'.format(comic.book))
         sys.exit(1)
 
     # Write images
-    # user_agent = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101 Firefox/59.0'}
-    user_agent = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299'}
+    random_user_agent = agentcl.UserAgent().load_random()
+    print('User Agent: {}'.format(random_user_agent))
+    user_agent = {'User-Agent': random_user_agent}
 
     with open(os.path.join(comic.chapter_dir, filename), 'r') as csv_file:
         csv_reader = csv.reader(csv_file)
@@ -383,7 +389,7 @@ def pycomic_download():
                     img_request = requests.get(url, headers=user_agent)
                     img_request.raise_for_status()
                 except:
-                    logging.warning('Page {} - {} request failed.'.format(page, url))
+                    logger.warning('Page {} - {} request failed.'.format(page, url))
                     try_times += 1
                     time.sleep(1)
                 else:
@@ -394,12 +400,12 @@ def pycomic_download():
                     time.sleep(1)
                     break
             else:
-                logging.warning('Exceed try time limit.')
+                logger.warning('Exceed try time limit.')
                 shutil.rmtree(comic.book)
-                logging.warning('Remove directory {}.'.format(comic.book))
+                logger.info('Remove directory {}.'.format(comic.book))
                 sys.exit(1)
 
-    print('Write {} complete.'.format(comic.book))
+    logger.info('Write {} complete.'.format(comic.book))
 
 
 def pycomic_fetch_chapter():
@@ -420,11 +426,11 @@ def pycomic_fetch_chapter():
     comic = _comic_in_menu(comic_name)
 
     # Make requests
-    page_req = requests.get(comic.url)
     try:
+        page_req = requests.get(comic.url)
         page_req.raise_for_status()
     except:
-        logging.warning('Request to {} failed.').format(comic.url)
+        logger.warning('Request to {} failed.').format(comic.url)
         sys.exit(1)
     page_req.encoding = 'utf-8'
 
@@ -453,10 +459,10 @@ def pycomic_fetch_chapter():
                 chapter_title = data.find('span').text
                 csv_writer.writerow((chapter_title, chapter_url, date[-1].text, comic_state))
     except:
-        logging.warning('Failed to write file {}.'.format(comic.menu_csv))
+        logger.warning('Failed to write file {}.'.format(comic.menu_csv))
         sys.exit(1)
     else:
-        print('Write file {} success.'.format(comic.menu_csv))
+        logger.info('Write file {} success.'.format(comic.menu_csv))
 
 
 def pycomic_fetch_url():
@@ -474,7 +480,7 @@ def pycomic_fetch_url():
         print(message)
         sys.exit(1)
     except ValueError:
-        logging.warning("Please enter numeric value for IDENTITYNUM")
+        logger.info("Please enter numeric value for IDENTITYNUM")
         sys.exit(1)
 
 
@@ -494,13 +500,13 @@ def pycomic_fetch_url():
             if chapter_num == None or chapter_url ==None:
                 raise Warning
     except Warning:
-        logging.warning('Identity Number {} not exist.'.format(request_identity))
+        logger.warning('Identity Number {} not exist.'.format(request_identity))
         sys.exit(1)
     except:
-        logging.warning('Failed to read file {}.'.format(comic.menu_csv))
+        logger.warning('Failed to read file {}.'.format(comic.menu_csv))
         sys.exit(1)
     finally:
-        logging.debug('Chapter url: {}'.format(chapter_url))
+        logger.debug('Chapter url: {}'.format(chapter_url))
 
     # Open Firefox web driver
     geckolog = 'geckodriver.log'
@@ -508,7 +514,7 @@ def pycomic_fetch_url():
         firefox = webdriver.Firefox()
         firefox.get(chapter_url)
     except:
-        logging.warning('{} request failed.'.format(chapter_url))
+        logger.warning('{} request failed.'.format(chapter_url))
         firefox.close()
         _geckolog_clean(geckolog)
         sys.exit(1)
@@ -521,7 +527,7 @@ def pycomic_fetch_url():
     try:
         last_page = int(num_regex.search(last_page_elem.text).group())
     except:
-        logging.warning('Failed to find last page of comic.')
+        logger.warning('Failed to find last page of comic.')
         firefox.close()
         _geckolog_clean(geckolog)
         sys.exit(1)
@@ -552,15 +558,16 @@ def pycomic_fetch_url():
             next_page.click()
             current_page += 1
     except Warning:
-        logging.warning('Try getting url at page {} exceed limit times'.format(current_page))
+        logger.warning('Try getting url at page {} exceed limit times'.format(current_page))
+        sys.exit(1)
     except:
-        logging.warning('Failed to write url to {} at page {}.'.format(comic.chapter_csv, current_page))
+        logger.warning('Failed to write url to {} at page {}.'.format(comic.chapter_csv, current_page))
         sys.exit(1)
     finally:
         csv_file.close()
         firefox.close()
         _geckolog_clean(geckolog)
-    print('{} fetch urls success.'.format(comic_name))
+    logger.info('{} fetch urls success.'.format(comic_name))
 
 
 def pycomic_make_pdf():
@@ -578,7 +585,7 @@ def pycomic_make_pdf():
         print(message)
         sys.exit(1)
     except ValueError:
-        logging.warning("Please enter numeric value for DIRECTORYTAG")
+        logger.info("Please enter numeric value for DIRECTORYTAG")
         sys.exit(1)
 
     _check()
@@ -598,25 +605,26 @@ def pycomic_make_pdf():
         if book_name == None:
             raise Warning
     except Warning:
-        logging.warning('Directory Tag {} not exist.'.format(dir_tag))
+        logger.warning('Directory Tag {} not exist.'.format(dir_tag))
         sys.exit(1)
     except:
-        logging.warning('Failed to get target directory.')
+        logger.warning('Failed to get target directory.')
         sys.exit(1)
     else:
-        logging.debug('Book Name: {}'.format(book_name))
+        logger.debug('Book Name: {}'.format(book_name))
         comic.def_book(PY_BOOKS, book_name)
 
     # Preparation for making pdf
     comic.def_pdf_dir(PY_PDF)
     comic.def_pdf(PY_PDF, book_name)
-    logging.debug('PDF directory: {}'.format(comic.pdf_dir))
-    logging.debug('PDF File: {}'.format(comic.pdf))
+    logger.debug('PDF directory: {}'.format(comic.pdf_dir))
+    logger.debug('PDF File: {}'.format(comic.pdf))
 
+    # Check directory and file existence
     _check_dir_existence(comic.pdf_dir)
 
     if os.path.isfile(comic.pdf):
-        logging.warning('File {} already exist.'.format(comic.pdf))
+        logger.warning('File {} already exist.'.format(comic.pdf))
         sys.exit(1)
 
     # Making pdf file
@@ -630,11 +638,11 @@ def pycomic_make_pdf():
             image.save(comic.pdf, 'PDF', resolution=100, save_all=True)
         except:
             os.remove(comic.pdf)
-            logging.warning('Failed to make PDF, some problem occurs.')
+            logger.warning('Failed to make PDF, some problem occurs.')
             sys.exit(1)
         print('Write page {:3} Success.'.format(index+1))
 
-    print('Make PDF {} success.'.format(book_name))
+    logger.info('Make PDF {} success.'.format(book_name))
 
 
 
@@ -649,16 +657,11 @@ def _check():
     if not os.path.exists(menu_csv):
         create_file = open(menu_csv, 'w')
         create_file.close()
-    logging.debug('Check file {} success.'.format(menu_csv))
+    logger.debug('Check file {} success.'.format(menu_csv))
 
 
 def _check_dir_existence(dir):
-    try:
-        os.makedirs(dir)
-        logging.debug('Check dir {} success.'.format(dir))
-    except OSError as err:
-        if err.errno != errno.EEXIST:
-            raise
+    os.makedirs(dir, exist_ok=True)
 
 
 def _comic_in_menu(comic_name):
@@ -671,12 +674,12 @@ def _comic_in_menu(comic_name):
     """
     search_result = _search(comic_name)
     if search_result == None:
-        logging.warning('No match to {} found.'.format(comic_name))
+        logger.warning('No match to {} found.'.format(comic_name))
         sys.exit(1)
     comic = pycl.Comic(search_result[0], search_result[1], search_result[2])
     comic.def_url(COMIC_999_URL)
     comic.def_menu(PY_MENU)
-    logging.debug(comic)
+    logger.debug(comic)
     return comic
 
 
@@ -701,31 +704,31 @@ def _get_image_url(driver):
     image_url = 'Failed'
     try:
         manga_id = driver.find_element_by_id(img_id)
-        logging.debug('Manga ID: {}'.format(manga_id))
+        logger.debug('Manga ID: {}'.format(manga_id))
         image_webpage = manga_id.get_attribute(img_attr)
-        logging.debug('Image Webpage: {}'.format(image_webpage))
+        logger.debug('Image Webpage: {}'.format(image_webpage))
         # Open page in new tab
         driver.execute_script("window.open('{page}');".format(page=image_webpage))
         time.sleep(1.2)
         driver.switch_to.window(driver.window_handles[1])
         # Get image url
         image_tag = driver.find_element_by_tag_name(img_tag)
-        logging.debug('Image Tag: {}'.format(image_tag))
+        logger.debug('Image Tag: {}'.format(image_tag))
         image_url = image_tag.get_attribute(img_attr)
-        logging.debug('Image URL: {}'.format(image_url))
+        logger.debug('Image URL: {}'.format(image_url))
     except:
-        logging.debug('Some Error occurs in _get_image_url')
+        logger.warning('Some Error occurs in _get_image_url')
     finally:
         # Close tab and return focus on first tab
-        logging.debug('Handles: {}'.format(driver.window_handles))
+        logger.debug('Handles: {}'.format(driver.window_handles))
         for handle in driver.window_handles[1:]:
-            logging.debug('Handle: {}'.format(handle))
+            logger.debug('Handle: {}'.format(handle))
             driver.switch_to.window(handle)
-            logging.debug('Switch handle')
+            logger.debug('Switch handle')
             driver.close()
-        logging.debug('Closing tags success.')
+        logger.debug('Closing tags success.')
         driver.switch_to.window(driver.window_handles[0])
-        logging.debug('_get_image_url Success.')
+        logger.debug('_get_image_url Success.')
 
     return image_url
 

@@ -2,8 +2,13 @@
 #### Program to download and save comic to local disk
 Fetching comic from **999comic** website
 
-### Version 0.9
-New **pycomic.py** program to replace the older programs
+#### Additional Requirement
+`geckodriver` need to be installed before program can be run
+
+#### Setup
+Run `setup.sh` script to setup program for use
+
+### Version 1.0.0
 
 ##### Methods
 - add
