@@ -152,7 +152,7 @@ def pycomic_list():
         csv_reader = csv.reader(csv_file)
         for comic_data in csv_reader:
             if re_pattern.search(comic_data[0]) != None or re_pattern.search(comic_data[1]) != None:
-                print('{} / {}: {}'.format(comic_data[0], comic_data[1], comic_data[2]))
+                print('{:6} : {:20} {:10}'.format(comic_data[2], comic_data[0], comic_data[1]))
     print('------ END ------')
 
 
@@ -197,12 +197,12 @@ def pycomic_list_menu():
                         comic_state = comic_data[3]
                     except IndexError:
                         remind_message = '{} is an old version.\nPlease update with fetch-chapter command.'.format(menu_csv)
-                    print('Identity Number {} : {}'.format(identify_num, comic_data[0]))
+                    print('Identity Number {:4d} : {}'.format(identify_num, comic_data[0]))
                 identify_num += 1
 
             print('------ INFO ------')
             if last_update is not None:
-                print('Last Update: {}'.format(last_update))
+                print('Last  Update: {}'.format(last_update))
             if comic_state is not None:
                 print('Comic Status: {}'.format(comic_state))
 
@@ -246,7 +246,7 @@ def pycomic_list_chapters():
     print('----- START -----')
     for dir_tag, dir in enumerate(dir_list):
         if re_pattern.search(dir) != None:
-            print('Directory Tag {}: {}'.format(dir_tag, dir))
+            print('Directory Tag {:4d} : {}'.format(dir_tag, dir))
     print('------ END ------')
 
 
@@ -281,7 +281,7 @@ def pycomic_list_pdf():
     print('----- START -----')
     for file in file_list:
         if re_pattern.search(file) != None:
-            print('Comic Book: {}'.format(file))
+            print('Comic Book : {:>20}'.format(file))
     print('------ END ------')
 
 
@@ -317,7 +317,7 @@ def pycomic_list_url():
     print('----- START -----')
     for file in file_list:
         if re_pattern.search(file) != None:
-            print('FILE TAG {} : {}'.format(file_tag, file))
+            print('FILE TAG {:4d} : {:>20}'.format(file_tag, file))
         file_tag += 1
     print('------ END ------')
 
@@ -405,7 +405,7 @@ def pycomic_download():
                 logger.info('Remove directory {}.'.format(comic.book))
                 sys.exit(1)
 
-    logger.info('Write {} complete.'.format(comic.book))
+    logger.info('Write {} {} complete.'.format(comic.book, request_tag))
 
 
 def pycomic_fetch_chapter():
@@ -567,7 +567,7 @@ def pycomic_fetch_url():
         csv_file.close()
         firefox.close()
         _geckolog_clean(geckolog)
-    logger.info('{} fetch urls success.'.format(comic_name))
+    logger.info('{} {} fetch urls success.'.format(comic_name, request_identity))
 
 
 def pycomic_make_pdf():
