@@ -14,7 +14,7 @@ import logging
 from pathlib import Path
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from PIL import Image
+from PIL import Image, ImageFile
 
 import pycomic_class as pycl
 import user_agent_class as agentcl
@@ -628,19 +628,14 @@ def pycomic_make_pdf():
         sys.exit(1)
 
     # Making pdf file
+    ImageFile.LOAD_TRUNCATED_IMAGES = True
     pages = os.listdir(comic.book)
     pages.sort()
-    for index, page in enumerate(pages):
-        image = Image.open(os.path.join(comic.book, page))
-        try:
-            image.save(comic.pdf, 'PDF', resolution=100, save_all=True, append=True)
-        except IOError:
-            image.save(comic.pdf, 'PDF', resolution=100, save_all=True)
-        except:
-            os.remove(comic.pdf)
-            logger.warning('Failed to make PDF, some problem occurs.')
-            sys.exit(1)
-        print('Write page {:3} Success.'.format(index+1))
+
+    images = []
+    for page in pages:
+        images.append(Image.open(os.path.join(comic.book, page)))
+    images[0].save(comic.pdf, 'PDF', resolution=100, save_all=True, append_images=images[1:])
 
     logger.info('Make PDF {} success.'.format(book_name))
 
