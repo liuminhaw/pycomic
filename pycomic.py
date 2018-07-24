@@ -25,12 +25,12 @@ logger = logcl.PersonalLog('pycomic')
 logging.disable(logging.DEBUG)
 
 # Pre-defined
-HOME = str(Path.home())
-PY_MENU = os.path.join(HOME, 'pycomic', 'menu')
-PY_URL = os.path.join(HOME, 'pycomic', 'url')
-PY_BOOKS = os.path.join(HOME, 'pycomic', 'books')
-PY_PDF = os.path.join(HOME, 'pycomic', 'pdf')
-MENU_CSV = 'menu.csv'
+# HOME = str(Path.home())
+# PY_MENU = os.path.join(HOME, 'pycomic', 'menu')
+# PY_URL = os.path.join(HOME, 'pycomic', 'url')
+# PY_BOOKS = os.path.join(HOME, 'pycomic', 'books')
+# PY_PDF = os.path.join(HOME, 'pycomic', 'pdf')
+# MENU_CSV = 'menu.csv'
 
 COMIC_999_URL_HOME = 'https://www.999comics.com'
 COMIC_999_URL = 'https://www.999comics.com/comic/'
@@ -38,35 +38,38 @@ COMIC_999_URL = 'https://www.999comics.com/comic/'
 
 def main():
 
-    logger.debug('Menu: {}'.format(PY_MENU))
-    logger.debug('URL: {}'.format(PY_URL))
-    logger.debug('Books: {}'.format(PY_BOOKS))
-    logger.debug('PDF: {}'.format(PY_PDF))
+    # logger.debug('Menu: {}'.format(PY_MENU))
+    # logger.debug('URL: {}'.format(PY_URL))
+    # logger.debug('Books: {}'.format(PY_BOOKS))
+    # logger.debug('PDF: {}'.format(PY_PDF))
+
+    # Config file class define
+    pyconfig = pycl.Config(['/etc/.pycomic.ini', '.pycomic.ini'])
 
     if len(sys.argv) == 1:
         pycomic_help()
     elif sys.argv[1] == 'add':
-        pycomic_add()
+        pycomic_add(pyconfig)
     elif sys.argv[1] == 'download':
-        pycomic_download()
+        pycomic_download(pyconfig)
     elif sys.argv[1] == 'fetch-chapter':
-        pycomic_fetch_chapter()
+        pycomic_fetch_chapter(pyconfig)
     elif sys.argv[1] == 'fetch-url':
-        pycomic_fetch_url()
+        pycomic_fetch_url(pyconfig)
     elif sys.argv[1] == 'help':
         pycomic_help()
     elif sys.argv[1] == 'list':
-        pycomic_list()
+        pycomic_list(pyconfig)
     elif sys.argv[1] == 'list-menu':
-        pycomic_list_menu()
+        pycomic_list_menu(pyconfig)
     elif sys.argv[1] == 'list-pdf':
-        pycomic_list_pdf()
+        pycomic_list_pdf(pyconfig)
     elif sys.argv[1] == 'list-chapters':
-        pycomic_list_chapters()
+        pycomic_list_chapters(pyconfig)
     elif sys.argv[1] == 'list-url':
-        pycomic_list_url()
+        pycomic_list_url(pyconfig)
     elif sys.argv[1] == 'make-pdf':
-        pycomic_make_pdf()
+        pycomic_make_pdf(pyconfig)
     else:
         pycomic_help()
 
@@ -91,7 +94,7 @@ def pycomic_help():
     sys.exit(1)
 
 
-def pycomic_add():
+def pycomic_add(pyconfig):
     message = \
     """
     USAGE:
@@ -106,21 +109,26 @@ def pycomic_add():
         print(message)
         sys.exit(1)
 
-    _check()
+    _check(pyconfig)
 
     line_number = 0
-    menu_csv = os.path.join(PY_MENU, MENU_CSV)
+    # menu_csv = os.path.join(PY_MENU, MENU_CSV)
+    menu_csv = pyconfig.main_menu()
+
     # Check duplicate comic information
     with open(menu_csv, 'r') as csv_file:
         csv_reader = csv.reader(csv_file)
         for comic_data in csv_reader:
             line_number += 1
+            # Check for ENGLISHNAME duplicate
             if english_name in comic_data:
                 logger.info('{} in {}. Line: {}'.format(english_name, comic_data, line_number))
                 sys.exit(1)
+            # Check for CHINESENAME duplicate
             if chinese_name in comic_data:
                 logger.info('{} in {}. Line: {}'.format(chinese_name, comic_data, line_number))
                 sys.exit(1)
+            # Check for NUMBER duplicate
             if number in comic_data:
                 logger.info('{} in {}. Line: {}'.format(number, comic_data, line_number))
                 sys.exit(1)
@@ -132,7 +140,7 @@ def pycomic_add():
     logger.info('Write {} to {} success.'.format(data, menu_csv))
 
 
-def pycomic_list():
+def pycomic_list(pyconfig):
     message = \
     """
     USAGE:
@@ -143,12 +151,11 @@ def pycomic_list():
     except IndexError:
         pattern = ''
 
-    _check()
+    _check(pyconfig)
 
     print('----- START -----')
-    menu_csv = os.path.join(PY_MENU, MENU_CSV)
     re_pattern = re.compile(r'.*{}.*'.format(pattern), re.IGNORECASE)
-    with open(menu_csv, 'r') as csv_file:
+    with open(pyconfig.main_menu(), 'r') as csv_file:
         csv_reader = csv.reader(csv_file)
         for comic_data in csv_reader:
             if re_pattern.search(comic_data[0]) != None or re_pattern.search(comic_data[1]) != None:
@@ -156,7 +163,7 @@ def pycomic_list():
     print('------ END ------')
 
 
-def pycomic_list_menu():
+def pycomic_list_menu(pyconfig):
     message = \
     """
     USAGE:
@@ -173,7 +180,7 @@ def pycomic_list_menu():
     except:
         pattern = ''
 
-    _check()
+    _check(pyconfig)
 
     # Find comic in menu.csv file
     comic = _comic_in_menu(comic_name)
@@ -215,7 +222,7 @@ def pycomic_list_menu():
         sys.exit(1)
 
 
-def pycomic_list_chapters():
+def pycomic_list_chapters(pyconfig):
     message = \
     """
     USAGE:
@@ -232,7 +239,7 @@ def pycomic_list_chapters():
     except IndexError:
         pattern = ''
 
-    _check()
+    _check(pyconfig)
 
     # Find comic in menu.csv file
     comic = _comic_in_menu(comic_name)
@@ -250,7 +257,7 @@ def pycomic_list_chapters():
     print('------ END ------')
 
 
-def pycomic_list_pdf():
+def pycomic_list_pdf(pyconfig):
     message = \
     """
     USAGE:
@@ -267,7 +274,7 @@ def pycomic_list_pdf():
     except IndexError:
         pattern = ''
 
-    _check()
+    _check(pyconfig)
 
     # See if comic exist
     comic = _comic_in_menu(comic_name)
@@ -285,7 +292,7 @@ def pycomic_list_pdf():
     print('------ END ------')
 
 
-def pycomic_list_url():
+def pycomic_list_url(pyconfig):
     message = \
     """
     USAGE:
@@ -302,7 +309,7 @@ def pycomic_list_url():
     except IndexError:
         pattern = ''
 
-    _check()
+    _check(pyconfig)
 
     # Find comic in menu.csv file
     comic = _comic_in_menu(comic_name)
@@ -322,7 +329,7 @@ def pycomic_list_url():
     print('------ END ------')
 
 
-def pycomic_download():
+def pycomic_download(pyconfig):
     message = \
     """
     USAGE:
@@ -340,7 +347,7 @@ def pycomic_download():
         logger.info("Please enter numeric value for FILETAG")
         sys.exit(1)
 
-    _check()
+    _check(pyconfig)
 
     # Find comic in menu.csv file
     comic = _comic_in_menu(comic_name)
@@ -408,7 +415,7 @@ def pycomic_download():
     logger.info('Write {} {} complete.'.format(comic.book, request_tag))
 
 
-def pycomic_fetch_chapter():
+def pycomic_fetch_chapter(pyconfig):
     message = \
     """
     USAGE:
@@ -420,7 +427,7 @@ def pycomic_fetch_chapter():
         print(message)
         sys.exit(1)
 
-    _check()
+    _check(pyconfig)
 
     # Find comic in menu.csv file
     comic = _comic_in_menu(comic_name)
@@ -465,7 +472,7 @@ def pycomic_fetch_chapter():
         logger.info('Write file {} success.'.format(comic.menu_csv))
 
 
-def pycomic_fetch_url():
+def pycomic_fetch_url(pyconfig):
     message = \
     """
     USAGE:
@@ -484,7 +491,7 @@ def pycomic_fetch_url():
         sys.exit(1)
 
 
-    _check()
+    _check(pyconfig)
 
     # Find comic in menu.csv file
     comic = _comic_in_menu(comic_name)
@@ -570,7 +577,7 @@ def pycomic_fetch_url():
     logger.info('{} {} fetch urls success.'.format(comic_name, request_identity))
 
 
-def pycomic_make_pdf():
+def pycomic_make_pdf(pyconfig):
     message = \
     """
     USAGE:
@@ -588,7 +595,7 @@ def pycomic_make_pdf():
         logger.info("Please enter numeric value for DIRECTORYTAG")
         sys.exit(1)
 
-    _check()
+    _check(pyconfig)
 
     # Find comic in menu.csv file
     comic = _comic_in_menu(comic_name)
@@ -641,18 +648,35 @@ def pycomic_make_pdf():
 
 
 
-def _check():
-    menu_csv = os.path.join(PY_MENU, MENU_CSV)
+def _check(config):
+    """
+    Initial check for pycomic file structure
+    Input:
+        config : Config Object
+    """
+    # pyconfig = pycl.Config(['/etc/.pycomic.ini', '.pycomic.ini'])
 
-    _check_dir_existence(PY_MENU)
-    _check_dir_existence(PY_URL)
-    _check_dir_existence(PY_BOOKS)
-    _check_dir_existence(PY_PDF)
+    _check_dir_existence(config.menu())
+    _check_dir_existence(config.links())
+    _check_dir_existence(config.images())
+    _check_dir_existence(config.comics())
 
-    if not os.path.exists(menu_csv):
-        create_file = open(menu_csv, 'w')
+    if not os.path.exists(config.main_menu()):
+        create_file = open(config.main_menu(), 'w')
         create_file.close()
-    logger.debug('Check file {} success.'.format(menu_csv))
+    logger.debug('Check file {} success.'.format(config.main_menu()))
+
+    # menu_csv = os.path.join(PY_MENU, MENU_CSV)
+    #
+    # _check_dir_existence(PY_MENU)
+    # _check_dir_existence(PY_URL)
+    # _check_dir_existence(PY_BOOKS)
+    # _check_dir_existence(PY_PDF)
+
+    # if not os.path.exists(menu_csv):
+    #     create_file = open(menu_csv, 'w')
+    #     create_file.close()
+    # logger.debug('Check file {} success.'.format(menu_csv))
 
 
 def _check_dir_existence(dir):
