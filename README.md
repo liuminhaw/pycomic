@@ -6,7 +6,12 @@ Fetching comic from **999comic** website
 `geckodriver` need to be installed before program can be run
 
 #### Setup
-Run `setup.sh` script to setup program for use
+Run `setup.sh` script to setup program for use  
+`~/.bashrc` need to be reload after setup
+
+#### Configuration
+`.pycomic.ini` config file will be create in user's home directory  
+Modify `.pycomic.ini` for custom configuration
 
 ### Version 1.0.0
 

@@ -4,8 +4,8 @@ Class definition for pycomic
 
 import os, sys
 import configparser,  pathlib
-import logging_class as logcl
-import user_agent_class as agentcl
+from pycomic_pkg import logging_class as logcl
+from pycomic_pkg import user_agent_class as agentcl
 
 
 logger = logcl.PersonalLog('pycomic_class')

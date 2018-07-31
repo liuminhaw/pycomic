@@ -4,7 +4,7 @@ Program:
 Author:
     haw
 Version:
-    1.0.0
+    1.0.1
 """
 
 import sys, os, errno
@@ -17,7 +17,7 @@ class PersonalLog():
         self.logger = logging.getLogger(prog_name)
 
         # Log file name
-        filename = '{}-{}.log'.format(datetime.date.today(), prog_name)
+        filename = '{}-{}.log'.format(datetime.date.today().strftime('%Y-%m'), prog_name)
 
         self.log_dir = os.path.join(str(Path.home()), 'python_log')
         self.log_file = os.path.join(self.log_dir, filename)

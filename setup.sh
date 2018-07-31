@@ -1,53 +1,12 @@
 #!/bin/bash
 #
 # Program:
-#   Setup shell for pycomic
-#
-# Exit Code:
-#   1 : Script not executed by root
-#   3 : The Linux distribution is not supported by this script
-#
-#   11 : Failed to copy pycomic.py
-#   13 : Failed to change pycomic.py file permission
-#   15 : Failed to copy logging_class.py
-#   17 : Failed to copy pycomic_class.py
-#   19 : Failed to copy user_agent_class.py
-#   21 : Failed to install python modules using pip
+#   pycomic setup script
 
 
-PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
-export PATH
+# PATH=/bin:/sbin:/usr/bin:/user/sbin:/usr/local/bin:/usr/local/sbin
+# export PATH
 
-
-function centos7Install() {
-    pycomicMod
-
-    if [[ -d "/usr/lib64/python3.6" ]]; then
-        moduleMod /usr/lib64/python3.6/
-    fi
-
-    if [[ -d "/usr/lib64/python3.7" ]]; then
-        moduleMod /usr/lib64/python3.7/
-    fi
-}
-
-# Copy pycomic.py and change permission
-function pycomicMod() {
-    cp pycomic.py /usr/local/bin/
-    checkCode 11 "Failed to copy pycomic.py"
-    chmod 755 /usr/local/bin/pycomic.py
-    checkCode 13 "Failed to change pycomic.py file permission"
-}
-
-function moduleMod() {
-    LIBPATH=${1}
-    cp logging_class.py ${LIBPATH}
-    checkCode 15 "Failed to copy logging_class.py"
-    cp pycomic_class.py ${LIBPATH}
-    checkCode 17 "Failed to copy pycomic_class.py"
-    cp user_agent_class.py ${LIBPATH}
-    checkCode 19 "Failed to copy user_agent_class.py"
-}
 
 # Check exit code function
 # USAGE:
@@ -59,28 +18,43 @@ function checkCode() {
   fi
 }
 
-# Script need to be executed by root
-if [[ ${UID} -ne 0 ]]; then
-  echo "This script need to be executed by root."
-  exit 1
-fi
+function Installation() {
+  EXEC_DIR=${HOME}/local
 
-# Linux distribution checking
-SYSTEM_RELEASE=$(uname -r)
+  # Check target directory before setup
+  if [[ ! -d ${EXEC_DIR} ]]; then
+    mkdir ${EXEC_DIR}
+    checkCode 11 "mkdir local failed."
+    echo "export PATH=${PATH}:${EXEC_DIR}" >> ${HOME}/.bashrc
+    checkCode 13 "echo to .bashrc failed."
+    source ${HOME}/.bashrc
+    checkCode 15 "Reload .bashrc file failed."
+  fi
+
+  # Setup process
+  cp pycomic.py ${EXEC_DIR}
+  checkCode 3 "Copy pycomic.py failed"
+  chmod 755 ${EXEC_DIR}/pycomic.py
+  checkCode 5 "Change file permission failed."
+  cp .pycomic_template.ini ${HOME}/.pycomic.ini
+  checkCode 9 "Copy .pycomic.ini failed."
+  cp -r pycomic_pkg ${EXEC_DIR}
+  checkCode 7 "Copy pycomic_pkg directory failed."
+}
+
+
+# System checking
+SYSTEM_RELEASE=$(uname -a)
 case ${SYSTEM_RELEASE} in
-    *el7.x86_64*)
-        echo "Detected CentOS7"
-        centos7Install
-        ;;
-    *)
-        echo "Not supported distribution"
-        exit 3
+  *Linux*)
+    echo "Linux detected"
+    Installation
+    ;;
+  *)
+    echo "Not supported."
+    exit 1
 esac
 
-# Install require python modules
-pip3 install -r requirements.txt > /dev/null
-checkCode 21 "Failed to install python modules using pip3"
 
-# Setup success
-echo "pycomic setup success"
+echo "pycomic setup success."
 exit 0

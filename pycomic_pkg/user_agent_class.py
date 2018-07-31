@@ -9,7 +9,7 @@ Version:
 
 import sys, random, logging
 import requests
-import logging_class
+from pycomic_pkg import logging_class
 from bs4 import BeautifulSoup
 from datetime import datetime
 

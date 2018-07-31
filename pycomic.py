@@ -16,16 +16,16 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from PIL import Image, ImageFile
 
-import pycomic_class as pycl
-import user_agent_class as agentcl
-import logging_class as logcl
+from pycomic_pkg import pycomic_class as pycl
+from pycomic_pkg import user_agent_class as agentcl
+from pycomic_pkg import logging_class as logcl
 
 
 logger = logcl.PersonalLog('pycomic')
 logging.disable(logging.DEBUG)
 
 # Pre-defined
-# HOME = str(Path.home())
+HOME = str(Path.home())
 # PY_MENU = os.path.join(HOME, 'pycomic', 'menu')
 # PY_URL = os.path.join(HOME, 'pycomic', 'url')
 # PY_BOOKS = os.path.join(HOME, 'pycomic', 'books')
@@ -35,7 +35,7 @@ logging.disable(logging.DEBUG)
 COMIC_999_URL_HOME = 'https://www.999comics.com'
 COMIC_999_URL = 'https://www.999comics.com/comic/'
 
-pyconfig = pycl.Config(['/etc/.pycomic.ini', '.pycomic.ini'])
+pyconfig = pycl.Config(['.pycomic.ini', os.path.join(HOME, '.pycomic.ini')])
 
 
 def main():
@@ -205,7 +205,7 @@ def pycomic_list_menu():
                         last_update = comic_data[2]
                         comic_state = comic_data[3]
                     except IndexError:
-                        remind_message = '{} is an old version.\nPlease update with fetch-chapter command.'.format(menu_csv)
+                        remind_message = '{} is an old version.\nPlease update with fetch-chapter command.'.format(comic.menu_csv)
                     print('Identity Number {:4d} : {}'.format(identify_num, comic_data[0]))
                 identify_num += 1
 
