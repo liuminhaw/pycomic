@@ -36,7 +36,7 @@ function Installation() {
   checkCode 3 "Copy pycomic.py failed"
   chmod 755 ${EXEC_DIR}/pycomic.py
   checkCode 5 "Change file permission failed."
-  cp .pycomic_template.ini ${HOME}/.pycomic.ini
+  cp pycomic_template.ini ${HOME}/.pycomic.ini
   checkCode 9 "Copy .pycomic.ini failed."
   cp -r pycomic_pkg ${EXEC_DIR}
   checkCode 7 "Copy pycomic_pkg directory failed."

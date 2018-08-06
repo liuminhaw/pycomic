@@ -65,7 +65,7 @@ class Config():
 
             11 - Some needed key not exist in ini files
         """
-        HOME = str(pathlib.Path.home())
+        self.HOME = str(pathlib.Path.home())
 
         self.DEFAULT_SEC = 'DEFAULT'
         self.CONFIG_SEC = 'CONFIG'
@@ -88,7 +88,7 @@ class Config():
 
         # Set default directory
         try:
-            self._config.set(self.DEFAULT_SEC, self.DIRECTORY, os.path.join(HOME,self.DEFAULT_DIR))
+            self._config.set(self.DEFAULT_SEC, self.DIRECTORY, os.path.join(self.HOME,self.DEFAULT_DIR))
         except NoSectionError:
             logger.warning('Cannot find {} section in ini files.'.format(self.DEFAULT_SEC))
             sys.exit(5)
@@ -104,13 +104,7 @@ class Config():
             sys.exit(3)
 
         # Read CONFIG section
-        self._directory = self._read_key(self.DIRECTORY)
-        self._menu = self._read_key(self.MENU)
-        self._links = self._read_key(self.LINKS)
-        self._images = self._read_key(self.IMAGES)
-        self._comics = self._read_key(self.COMICS)
-        self._user_agent = self._read_key(self.USERAGENT)
-        self._main_menu = self._read_key(self.MAIN_MENU)
+        self._read_config()
 
 
 
@@ -125,21 +119,27 @@ class Config():
             return self._user_agent
 
     def directory(self):
+        self._read_config()
         return self._directory
 
     def menu(self):
+        self._read_config()
         return os.path.join(self._directory, self._menu)
 
     def links(self):
+        self._read_config()
         return os.path.join(self._directory, self._links)
 
     def images(self):
+        self._read_config()
         return os.path.join(self._directory, self._images)
 
     def comics(self):
+        self._read_config()
         return os.path.join(self._directory, self._comics)
 
     def main_menu(self):
+        self._read_config()
         return os.path.join(self._directory, self._menu, self._main_menu)
 
     def set_directory(self, path):
@@ -155,6 +155,16 @@ class Config():
 
         # Save ini file
         self._write_file()
+
+
+    def _read_config(self):
+        self._directory = self._read_key(self.DIRECTORY)
+        self._menu = self._read_key(self.MENU)
+        self._links = self._read_key(self.LINKS)
+        self._images = self._read_key(self.IMAGES)
+        self._comics = self._read_key(self.COMICS)
+        self.user_agent = self._read_key(self.USERAGENT)
+        self._main_menu = self._read_key(self.MAIN_MENU)
 
 
     def _read_key(self, key):

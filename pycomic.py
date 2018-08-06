@@ -26,11 +26,6 @@ logging.disable(logging.DEBUG)
 
 # Pre-defined
 HOME = str(Path.home())
-# PY_MENU = os.path.join(HOME, 'pycomic', 'menu')
-# PY_URL = os.path.join(HOME, 'pycomic', 'url')
-# PY_BOOKS = os.path.join(HOME, 'pycomic', 'books')
-# PY_PDF = os.path.join(HOME, 'pycomic', 'pdf')
-# MENU_CSV = 'menu.csv'
 
 COMIC_999_URL_HOME = 'https://www.999comics.com'
 COMIC_999_URL = 'https://www.999comics.com/comic/'
@@ -40,13 +35,8 @@ pyconfig = pycl.Config(['.pycomic.ini', os.path.join(HOME, '.pycomic.ini')])
 
 def main():
 
-    # logger.debug('Menu: {}'.format(PY_MENU))
-    # logger.debug('URL: {}'.format(PY_URL))
-    # logger.debug('Books: {}'.format(PY_BOOKS))
-    # logger.debug('PDF: {}'.format(PY_PDF))
 
     # Config file class define
-    # pyconfig = pycl.Config(['/etc/.pycomic.ini', '.pycomic.ini'])
 
     if len(sys.argv) == 1:
         pycomic_help()
@@ -58,6 +48,8 @@ def main():
         pycomic_fetch_chapter()
     elif sys.argv[1] == 'fetch-url':
         pycomic_fetch_url()
+    elif sys.argv[1] == 'get-home':
+        pycomic_get_home()
     elif sys.argv[1] == 'help':
         pycomic_help()
     elif sys.argv[1] == 'list':
@@ -72,6 +64,8 @@ def main():
         pycomic_list_url()
     elif sys.argv[1] == 'make-pdf':
         pycomic_make_pdf()
+    elif sys.argv[1] == 'set-home':
+        pycomic_set_home()
     else:
         pycomic_help()
 
@@ -84,6 +78,7 @@ def pycomic_help():
         pycomic download COMICNAME FILETAG
         pycomic fetch-chapter COMICNAME
         pycomic fetch-url COMICNAME IDENTITYNUM
+        pycomic get-home
         pycomic help
         pycomic list [PATTERN]
         pycomic list-chapters
@@ -91,6 +86,7 @@ def pycomic_help():
         pycomic list-pdf COMICNAME [PATTERN]
         pycomic list-url COMICNAME [PATTERN]
         pycomic make-pdf COMICNAME DIRECTORYTAG
+        pycomic set-home HOMEPATH
     """
     print(message)
     sys.exit(1)
@@ -581,6 +577,15 @@ def pycomic_fetch_url():
     logger.info('{} {} fetch urls success.'.format(comic_name, request_identity))
 
 
+def pycomic_get_home():
+    message = \
+    """
+    USAGE:
+        pycomic get-home
+    """
+    print('{}'.format(pyconfig.directory()))
+
+
 def pycomic_make_pdf():
     message = \
     """
@@ -651,6 +656,29 @@ def pycomic_make_pdf():
     logger.info('Make PDF {} success.'.format(book_name))
 
 
+def pycomic_set_home():
+    message = \
+    """
+    USAGE:
+        pycomic.py set-home PATH
+    NOTE:
+        PATH must be an existed directory
+    """
+    try:
+        home_path = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    # Check for PATH existence
+    if not os.path.isdir(home_path):
+        logger.warning('New home path should be an exist directory.')
+        sys.exit(1)
+
+    # Set new home path
+    pyconfig.set_directory(home_path)
+    print('Set new home path to {}'.format(pyconfig.directory()))
+
 
 def _check(config):
     """
@@ -669,18 +697,6 @@ def _check(config):
         create_file = open(config.main_menu(), 'w')
         create_file.close()
     logger.debug('Check file {} success.'.format(config.main_menu()))
-
-    # menu_csv = os.path.join(PY_MENU, MENU_CSV)
-    #
-    # _check_dir_existence(PY_MENU)
-    # _check_dir_existence(PY_URL)
-    # _check_dir_existence(PY_BOOKS)
-    # _check_dir_existence(PY_PDF)
-
-    # if not os.path.exists(menu_csv):
-    #     create_file = open(menu_csv, 'w')
-    #     create_file.close()
-    # logger.debug('Check file {} success.'.format(menu_csv))
 
 
 def _check_dir_existence(dir):
