@@ -66,6 +66,8 @@ def main():
         pycomic_make_pdf()
     elif sys.argv[1] == 'set-home':
         pycomic_set_home()
+    elif sys.argv[1] == 'verify':
+        pycomic_verify()
     else:
         pycomic_help()
 
@@ -87,6 +89,7 @@ def pycomic_help():
         pycomic list-url COMICNAME [PATTERN]
         pycomic make-pdf COMICNAME DIRECTORYTAG
         pycomic set-home HOMEPATH
+        pycomic verify COMICNAME DIRECTORYTAG
     """
     print(message)
     sys.exit(1)
@@ -611,7 +614,7 @@ def pycomic_make_pdf():
     comic.def_book_dir(pyconfig.images())
     book_name = None
 
-    # Get directory to for making pdf
+    # Get directory for making pdf
     dir_list = os.listdir(comic.book_dir)
     dir_list.sort()
     try:
@@ -644,7 +647,7 @@ def pycomic_make_pdf():
         sys.exit(1)
 
     # Making pdf file
-    ImageFile.LOAD_TRUNCATED_IMAGES = True
+    # ImageFile.LOAD_TRUNCATED_IMAGES = True
     pages = os.listdir(comic.book)
     pages.sort()
 
@@ -654,6 +657,67 @@ def pycomic_make_pdf():
     images[0].save(comic.pdf, 'PDF', resolution=100, save_all=True, append_images=images[1:])
 
     logger.info('Make PDF {} success.'.format(book_name))
+
+
+def pycomic_verify():
+    message = \
+    """
+    USAGE:
+        pycomic.py verify COMICNAME DIRECTORYTAG
+    NOTE:
+        Get DIRECTORYTAG value from list-chapters command
+    """
+    try:
+        comic_name = sys.argv[2]
+        dir_tag = int(sys.argv[3])
+    except IndexError:
+        print(message)
+        sys.exit(1)
+    except ValueError:
+        logger.info("Please enter numeric value for DIRECTORYTAG")
+        sys.exit(1)
+
+    _check(pyconfig)
+
+    # Find comic in menu.csv file
+    comic = _comic_in_menu(comic_name)
+    comic.def_book_dir(pyconfig.images())
+    book_name = None
+
+    # Get directory of images to verify
+    dir_list = os.listdir(comic.book_dir)
+    dir_list.sort()
+    try:
+        for tag_num, dir in enumerate(dir_list):
+            if dir_tag == tag_num:
+                book_name = dir
+        if book_name == None:
+            raise Warning
+    except Warning:
+        logger.warning('Directory Tag {} not exist.'.format(dir_tag))
+        sys.exit(1)
+    except:
+        logger.warning('Failed to get target directory.')
+        sys.exit(1)
+    else:
+        logger.debug('Book Name: {}'.format(book_name))
+        comic.def_book(pyconfig.images(), book_name)
+
+    # Verify images
+    images = os.listdir(comic.book)
+    images.sort()
+
+    for image in images:
+        img = Image.open(os.path.join(comic.book, image))
+        # print('Verify {}'.format(image))
+        try:
+            img.load()
+        except IOError:
+            logger.info("Image file {} is truncated.".format(os.path.join(comic.book, image)))
+        finally:
+            img.close()
+
+    print('Verification completed.')
 
 
 def pycomic_set_home():
