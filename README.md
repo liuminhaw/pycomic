@@ -7,29 +7,30 @@ Fetching comic from **999comic** website
 
 #### Setup
 Run `setup.sh` script to setup program for use  
-`~/.bashrc` need to be reload after setup
+`DESTINATION` is where you want to put all the comics data
+
+    ./setup.sh DESTINATION
 
 #### Configuration
 `.pycomic.ini` config file will be create in user's home directory  
 Modify `.pycomic.ini` for custom configuration
 
-### Version 1.1.0
-- Add `get-home` and `set-home` function
-- Re-ordered listing
+### Version 1.2.0
+- pycomic localize
+- Update setup script
 
 ##### Methods
 - add
 - download
 - fetch-chapter
 - fetch-url
-- get-home
 - help
 - list
 - list-chapters
 - list-pdf
 - list-menu
 - make-pdf
-- set-home
+- verify
 
 ##### add
 Store comic information to local.
@@ -52,11 +53,6 @@ Store each image link of comic to local
 Use `pycomic list-menu` to find `IDENTITYNUM`
 
     pycomic.py fetch-url COMICNAME IDENTITYNUM
-
-##### get-home
-Get current storing location
-
-    pycomic.py get-home
 
 ##### help
 Show available command options
@@ -93,8 +89,7 @@ Use `pycomic list-chapters` to find `DIRECTORYTAG`
 
     pycomic.py make-pdf COMICNAME DIRECTORYTAG
 
-##### set-home
-Set new storing location to `PATH`  
-`PATH` should be an exist directory
+##### verify
+Verify download images's integrity
 
-    pycomic.py set-home PATH
+    pycomic.py verify COMICNAME DIRECTORYTAG
