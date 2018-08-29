@@ -2,10 +2,13 @@
 #
 # Program:
 #   pycomic setup script
-
-
-# PATH=/bin:/sbin:/usr/bin:/user/sbin:/usr/local/bin:/usr/local/sbin
-# export PATH
+#
+# Exit Code:
+#   1 - Calling syntax error
+#   3 - Destination directory does not exist
+#
+#   11 - Copy file failed
+#   13 - Change file permission failed
 
 
 # Check exit code function
@@ -19,28 +22,36 @@ function checkCode() {
 }
 
 function Installation() {
-  EXEC_DIR=${HOME}/local
+    DESTDIR=${1}
 
-  # Check target directory before setup
-  if [[ ! -d ${EXEC_DIR} ]]; then
-    mkdir ${EXEC_DIR}
-    checkCode 11 "mkdir local failed."
-    echo "export PATH=${PATH}:${EXEC_DIR}" >> ${HOME}/.bashrc
-    checkCode 13 "echo to .bashrc failed."
-    source ${HOME}/.bashrc
-    checkCode 15 "Reload .bashrc file failed."
-  fi
-
-  # Setup process
-  cp pycomic.py ${EXEC_DIR}
-  checkCode 3 "Copy pycomic.py failed"
-  chmod 755 ${EXEC_DIR}/pycomic.py
-  checkCode 5 "Change file permission failed."
-  cp pycomic_template.ini ${HOME}/.pycomic.ini
-  checkCode 9 "Copy .pycomic.ini failed."
-  cp -r pycomic_pkg ${EXEC_DIR}
-  checkCode 7 "Copy pycomic_pkg directory failed."
+    # Setup process
+    cp README.md ${DESTDIR}
+    checkCode 11 "Copy README.md failed." &> /dev/null
+    cp pycomic.py ${DESTDIR}
+    checkCode 11 "Copy pycomic.py failed."  &> /dev/null
+    chmod 755 ${DESTDIR}/pycomic.py
+    checkCode 13 "Change file permission failed."   &> /dev/null
+    cp pycomic_template.ini ${DESTDIR}/pycomic_config.ini
+    checkCode 11 "Copy pycomic_template.ini failed."    &> /dev/null
+    cp requirements.txt ${DESTDIR}
+    checkCode 11 "Copy requirements.txt failed." &> /dev/null
+    cp -r pycomic_pkg ${DESTDIR}
+    checkCode 11 "Copy pycomic_pkg directory failed."   &> /dev/null
 }
+
+
+# Calling setup format check
+USAGE="setup.sh DESTINATION"
+
+if [[ ${#} -ne 1 ]];  then
+    echo -e "USAGE:\n    ${USAGE}"
+    exit 1
+fi
+
+if [[ ! -d ${1} ]]; then
+    echo "ERROR: Destination directory does not exist"
+    exit 3
+fi
 
 
 # System checking
@@ -48,7 +59,8 @@ SYSTEM_RELEASE=$(uname -a)
 case ${SYSTEM_RELEASE} in
   *Linux*)
     echo "Linux detected"
-    Installation
+    echo ""
+    Installation ${1}
     ;;
   *)
     echo "Not supported."

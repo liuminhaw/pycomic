@@ -22,7 +22,7 @@ from pycomic_pkg import logging_class as logcl
 
 
 logger = logcl.PersonalLog('pycomic')
-logging.disable(logging.DEBUG)
+# logging.disable(logging.DEBUG)
 
 # Pre-defined
 HOME = str(Path.home())
@@ -30,7 +30,8 @@ HOME = str(Path.home())
 COMIC_999_URL_HOME = 'https://www.999comics.com'
 COMIC_999_URL = 'https://www.999comics.com/comic/'
 
-pyconfig = pycl.Config(['.pycomic.ini', os.path.join(HOME, '.pycomic.ini')])
+# pyconfig = pycl.Config(['.pycomic.ini', os.path.join(HOME, '.pycomic.ini')])
+pyconfig = pycl.Config(['pycomic_config.ini'])
 
 
 def main():
@@ -48,8 +49,8 @@ def main():
         pycomic_fetch_chapter()
     elif sys.argv[1] == 'fetch-url':
         pycomic_fetch_url()
-    elif sys.argv[1] == 'get-home':
-        pycomic_get_home()
+    # elif sys.argv[1] == 'get-home':
+    #     pycomic_get_home()
     elif sys.argv[1] == 'help':
         pycomic_help()
     elif sys.argv[1] == 'list':
@@ -64,8 +65,8 @@ def main():
         pycomic_list_url()
     elif sys.argv[1] == 'make-pdf':
         pycomic_make_pdf()
-    elif sys.argv[1] == 'set-home':
-        pycomic_set_home()
+    # elif sys.argv[1] == 'set-home':
+    #     pycomic_set_home()
     elif sys.argv[1] == 'verify':
         pycomic_verify()
     else:
@@ -80,7 +81,6 @@ def pycomic_help():
         pycomic download COMICNAME FILETAG
         pycomic fetch-chapter COMICNAME
         pycomic fetch-url COMICNAME IDENTITYNUM
-        pycomic get-home
         pycomic help
         pycomic list [PATTERN]
         pycomic list-chapters
@@ -88,7 +88,6 @@ def pycomic_help():
         pycomic list-pdf COMICNAME [PATTERN]
         pycomic list-url COMICNAME [PATTERN]
         pycomic make-pdf COMICNAME DIRECTORYTAG
-        pycomic set-home HOMEPATH
         pycomic verify COMICNAME DIRECTORYTAG
     """
     print(message)
@@ -580,13 +579,13 @@ def pycomic_fetch_url():
     logger.info('{} {} fetch urls success.'.format(comic_name, request_identity))
 
 
-def pycomic_get_home():
-    message = \
-    """
-    USAGE:
-        pycomic get-home
-    """
-    print('{}'.format(pyconfig.directory()))
+# def pycomic_get_home():
+#     message = \
+#     """
+#     USAGE:
+#         pycomic get-home
+#     """
+#     print('{}'.format(pyconfig.directory()))
 
 
 def pycomic_make_pdf():
@@ -720,28 +719,28 @@ def pycomic_verify():
     print('Verification completed.')
 
 
-def pycomic_set_home():
-    message = \
-    """
-    USAGE:
-        pycomic.py set-home PATH
-    NOTE:
-        PATH must be an existed directory
-    """
-    try:
-        home_path = sys.argv[2]
-    except IndexError:
-        print(message)
-        sys.exit(1)
-
-    # Check for PATH existence
-    if not os.path.isdir(home_path):
-        logger.warning('New home path should be an exist directory.')
-        sys.exit(1)
-
-    # Set new home path
-    pyconfig.set_directory(home_path)
-    print('Set new home path to {}'.format(pyconfig.directory()))
+# def pycomic_set_home():
+#     message = \
+#     """
+#     USAGE:
+#         pycomic.py set-home PATH
+#     NOTE:
+#         PATH must be an existed directory
+#     """
+#     try:
+#         home_path = sys.argv[2]
+#     except IndexError:
+#         print(message)
+#         sys.exit(1)
+#
+#     # Check for PATH existence
+#     if not os.path.isdir(home_path):
+#         logger.warning('New home path should be an exist directory.')
+#         sys.exit(1)
+#
+#     # Set new home path
+#     pyconfig.set_directory(home_path)
+#     print('Set new home path to {}'.format(pyconfig.directory()))
 
 
 def _check(config):

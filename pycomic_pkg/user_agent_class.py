@@ -12,6 +12,7 @@ import requests
 from pycomic_pkg import logging_class
 from bs4 import BeautifulSoup
 from datetime import datetime
+# import logging_class
 
 
 URL_COMPUTER = 'https://developers.whatismybrowser.com/useragents/explore/hardware_type_specific/computer/'

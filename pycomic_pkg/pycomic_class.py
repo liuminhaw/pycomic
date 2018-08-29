@@ -6,6 +6,8 @@ import os, sys
 import configparser,  pathlib
 from pycomic_pkg import logging_class as logcl
 from pycomic_pkg import user_agent_class as agentcl
+# import logging_class as logcl
+# import user_agent_class as agentcl
 
 
 logger = logcl.PersonalLog('pycomic_class')
@@ -65,7 +67,7 @@ class Config():
 
             11 - Some needed key not exist in ini files
         """
-        self.HOME = str(pathlib.Path.home())
+        # self.HOME = str(pathlib.Path.home())
 
         self.DEFAULT_SEC = 'DEFAULT'
         self.CONFIG_SEC = 'CONFIG'
@@ -78,6 +80,7 @@ class Config():
         self.USERAGENT = 'User Agent'
         self.MAIN_MENU = 'Main Menu'
 
+        # Get config information
         self._config = configparser.ConfigParser()
         self._config_found = self._config.read(candidates)
 
@@ -87,28 +90,28 @@ class Config():
             sys.exit(1)
 
         # Set default directory
-        try:
-            self._config.set(self.DEFAULT_SEC, self.DIRECTORY, os.path.join(self.HOME,self.DEFAULT_DIR))
-        except NoSectionError:
-            logger.warning('Cannot find {} section in ini files.'.format(self.DEFAULT_SEC))
-            sys.exit(5)
+        # try:
+        #     self._config.set(self.DEFAULT_SEC, self.DIRECTORY, os.path.join(self.HOME,self.DEFAULT_DIR))
+        # except NoSectionError:
+        #     logger.warning('Cannot find {} section in ini files.'.format(self.DEFAULT_SEC))
+        #     sys.exit(5)
 
         # Write directory option setting to file
-        self._write_file()
+        # self._write_file()
 
         # Set CONFIG section
-        try:
-            self._config_section = self._config[self.CONFIG_SEC]
-        except KeyError:
-            logger.warning('Cannot find {} section in ini files.'.format(self.CONFIG_SEC))
-            sys.exit(3)
+        # try:
+        #     self._config_section = self._config[self.CONFIG_SEC]
+        # except KeyError:
+        #     logger.warning('Cannot find {} section in ini files.'.format(self.CONFIG_SEC))
+        #     sys.exit(3)
 
         # Read CONFIG section
-        self._read_config()
-
+        # self._read_config()
 
 
     def useragent(self):
+        config_section = self._read_section(self.CONFIG_SEC)
         user_agent = agentcl.UserAgent().random_computer()
 
         if len(user_agent) != 0:
@@ -116,69 +119,94 @@ class Config():
             self._write_file()
             return user_agent
         else:
-            return self._user_agent
+            return self._read_key(config_section, self.USERAGENT)
 
     def directory(self):
-        self._read_config()
+        config_section = self._read_section(self.CONFIG_SEC)
+        self._read_config(config_section)
         return self._directory
 
     def menu(self):
-        self._read_config()
+        config_section = self._read_section(self.CONFIG_SEC)
+        self._read_config(config_section)
         return os.path.join(self._directory, self._menu)
 
     def links(self):
-        self._read_config()
+        config_section = self._read_section(self.CONFIG_SEC)
+        self._read_config(config_section)
         return os.path.join(self._directory, self._links)
 
     def images(self):
-        self._read_config()
+        config_section = self._read_section(self.CONFIG_SEC)
+        self._read_config(config_section)
         return os.path.join(self._directory, self._images)
 
     def comics(self):
-        self._read_config()
+        config_section = self._read_section(self.CONFIG_SEC)
+        self._read_config(config_section)
         return os.path.join(self._directory, self._comics)
 
     def main_menu(self):
-        self._read_config()
+        config_section = self._read_section(self.CONFIG_SEC)
+        self._read_config(config_section)
         return os.path.join(self._directory, self._menu, self._main_menu)
 
-    def set_directory(self, path):
+    # def set_directory(self, path):
+    #     """
+    #     Input:
+    #         path : String - directory path
+    #     """
+    #     try:
+    #         self._config.set(self.CONFIG_SEC, self.DIRECTORY, os.path.join(path, self.DEFAULT_DIR))
+    #     except NoSectionError:
+    #         logger.warning('Cannot find {} section in ini files.'.format(self.CONFIG_SEC))
+    #         sys.exit(3)
+    #
+    #     # Save ini file
+    #     self._write_file()
+
+
+    def _read_config(self, section):
+        self._directory = self._read_key(section, self.DIRECTORY)
+        self._menu = self._read_key(section, self.MENU)
+        self._links = self._read_key(section, self.LINKS)
+        self._images = self._read_key(section, self.IMAGES)
+        self._comics = self._read_key(section, self.COMICS)
+        self._user_agent = self._read_key(section, self.USERAGENT)
+        self._main_menu = self._read_key(section, self.MAIN_MENU)
+
+
+    def _read_section(self, name):
         """
+        Read section in .ini files and return the read object
         Input:
-            path : String - directory path
+            name - section name
+        Return:
+            Configuration section object
         """
         try:
-            self._config.set(self.CONFIG_SEC, self.DIRECTORY, os.path.join(path, self.DEFAULT_DIR))
-        except NoSectionError:
-            logger.warning('Cannot find {} section in ini files.'.format(self.CONFIG_SEC))
+            section = self._config[name]
+        except:
+            logger.warning('Cannot find {} section in .ini files.'.format(name))
             sys.exit(3)
-
-        # Save ini file
-        self._write_file()
-
-
-    def _read_config(self):
-        self._directory = self._read_key(self.DIRECTORY)
-        self._menu = self._read_key(self.MENU)
-        self._links = self._read_key(self.LINKS)
-        self._images = self._read_key(self.IMAGES)
-        self._comics = self._read_key(self.COMICS)
-        self.user_agent = self._read_key(self.USERAGENT)
-        self._main_menu = self._read_key(self.MAIN_MENU)
+        else:
+            return section
 
 
-    def _read_key(self, key):
+    def _read_key(self, section, key):
         """
         Input:
+            section - Config file section
             key : String - ini file option key
         Return:
             Value of the key
         """
-        value = self._config_section.get(key)
+        value = section.get(key)
         if value is None:
             logger.warning('No {} key exist in ini files.'.format(key))
             sys.exit(11)
-        return value
+        else:
+            return value
 
 
     def _write_file(self):
@@ -194,7 +222,7 @@ class Config():
 if __name__ == '__main__':
 
     # Test Config class
-    config = Config(['not_exist.ini', '.pycomic.ini'])
+    config = Config(['not_exist.ini', '../pycomic_template.ini'])
 
     print(config.useragent())
     print(config.directory())
@@ -204,4 +232,4 @@ if __name__ == '__main__':
     print(config.comics())
     print(config.main_menu())
 
-    config.set_directory('/tmp')
+    # config.set_directory('/tmp')
