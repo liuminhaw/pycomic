@@ -4,7 +4,7 @@ Program:
 Author:
     haw
 Version:
-    1.0.1
+    1.1.0
 """
 
 import sys, os, errno
@@ -13,13 +13,19 @@ from pathlib import Path
 
 class PersonalLog():
 
-    def __init__(self, prog_name):
+    def __init__(self, prog_name, directory=''):
         self.logger = logging.getLogger(prog_name)
 
         # Log file name
         filename = '{}-{}.log'.format(datetime.date.today().strftime('%Y-%m'), prog_name)
 
-        self.log_dir = os.path.join(str(Path.home()), 'python_log')
+        # logging target directory
+        if os.path.isdir(directory):
+            self.log_dir = directory
+        else:
+            self.log_dir = os.path.join(str(Path.home()), 'python_log')
+
+        # logging target file
         self.log_file = os.path.join(self.log_dir, filename)
 
         # Make python_log directory if not exist

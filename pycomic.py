@@ -21,14 +21,15 @@ from pycomic_pkg import user_agent_class as agentcl
 from pycomic_pkg import logging_class as logcl
 
 
-logger = logcl.PersonalLog('pycomic')
-# logging.disable(logging.DEBUG)
-
 # Pre-defined
 HOME = str(Path.home())
+LOG_DIR = os.path.join(os.getcwd(), 'log')
 
 COMIC_999_URL_HOME = 'https://www.999comics.com'
 COMIC_999_URL = 'https://www.999comics.com/comic/'
+
+logger = logcl.PersonalLog('pycomic', LOG_DIR)
+# logging.disable(logging.DEBUG)
 
 # pyconfig = pycl.Config(['.pycomic.ini', os.path.join(HOME, '.pycomic.ini')])
 pyconfig = pycl.Config(['pycomic_config.ini'])

@@ -15,7 +15,8 @@ Run `setup.sh` script to setup program for use
 `.pycomic.ini` config file will be create in user's home directory  
 Modify `.pycomic.ini` for custom configuration
 
-### Version 1.2.0
+### Version 1.2.1
+- logging class update (Customize logging destination)
 - pycomic localize
 - Update setup script
 
