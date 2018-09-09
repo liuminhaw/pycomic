@@ -9,6 +9,7 @@
 #
 #   11 - Copy file failed
 #   13 - Change file permission failed
+#   15 - Make directory failed
 
 
 # Check exit code function
@@ -27,16 +28,26 @@ function Installation() {
     # Setup process
     cp README.md ${DESTDIR}
     checkCode 11 "Copy README.md failed." &> /dev/null
+
     cp pycomic.py ${DESTDIR}
     checkCode 11 "Copy pycomic.py failed."  &> /dev/null
+
     chmod 755 ${DESTDIR}/pycomic.py
     checkCode 13 "Change file permission failed."   &> /dev/null
+
     cp pycomic_template.ini ${DESTDIR}/pycomic_config.ini
     checkCode 11 "Copy pycomic_template.ini failed."    &> /dev/null
+
     cp requirements.txt ${DESTDIR}
     checkCode 11 "Copy requirements.txt failed." &> /dev/null
+
     cp -r pycomic_pkg ${DESTDIR}
     checkCode 11 "Copy pycomic_pkg directory failed."   &> /dev/null
+
+    if [[ ! -d "${DESTDIR}/log" ]]; then
+      mkdir "${DESTDIR}/log"
+      checkCode 15 "Make log directory failed." &> /dev/null
+    fi
 }
 
 

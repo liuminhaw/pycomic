@@ -399,14 +399,14 @@ def pycomic_download():
                     img_request = requests.get(url, headers=user_agent)
                     img_request.raise_for_status()
                 except:
-                    logger.warning('Page {} - {} request failed.'.format(page, url))
+                    logger.warning('Page {:4} - {} request failed.'.format(page, url))
                     try_times += 1
                     time.sleep(1)
                 else:
                     with open(img_path, 'wb') as write_file:
                         for chunk in img_request.iter_content(10000):
                             write_file.write(chunk)
-                        print('Write page {} - {} image success.'.format(page, img_name))
+                        print('Write page {:>4} - {} image success.'.format(page, img_name))
                     time.sleep(1)
                     break
             else:
@@ -561,7 +561,7 @@ def pycomic_fetch_url():
                 continue
             # Get image url successful
             csv_writer.writerow((current_page, image_url))
-            print('Write page {} success - {}'.format(current_page, image_url))
+            print('Write page {:4} success - {}'.format(current_page, image_url))
             if current_page == last_page:
                 break
             next_page = firefox.find_element_by_id('next')
