@@ -4,24 +4,20 @@ Program:
 Author:
     haw
 Version:
-    1.1
+    2.0.0
 """
 
-import sys, random, logging
+import sys, random
 import requests
-from pycomic_pkg import logging_class
 from bs4 import BeautifulSoup
 from datetime import datetime
-# import logging_class
 
 
 URL_COMPUTER = 'https://developers.whatismybrowser.com/useragents/explore/hardware_type_specific/computer/'
 URL_PHONE = 'https://developers.whatismybrowser.com/useragents/explore/hardware_type_specific/phone/'
 
 SELECTOR = 'td.useragent a'
-logger = logging_class.PersonalLog('user_agent_class')
 
-logging.disable(logging.DEBUG)
 
 
 class UserAgent():
@@ -63,7 +59,6 @@ class UserAgent():
 
         try:
             user_agent = random.choice(selected_list)
-            logger.debug('User-Agent: {}'.format(user_agent.text))
         except IndexError:
             return selected_list
         else:
@@ -83,7 +78,7 @@ class UserAgent():
 
             print('Write user-agent to file {} success.'.format(self._filename))
         else:
-            logger.warning('No user-agent data write to file.')
+            print('No user-agent data write to file.')
 
 
     def _scrape_for_user_agent(self, url_type):
@@ -96,8 +91,6 @@ class UserAgent():
             req = requests.get(url_type)
             req.raise_for_status()
         except:
-            logger.warning('Request for user-agent web page failed.')
-            # sys.exit(1)
             return []
 
         # Grab information

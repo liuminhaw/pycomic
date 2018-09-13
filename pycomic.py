@@ -16,7 +16,10 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from PIL import Image, ImageFile
 
-from pycomic_pkg import pycomic_class as pycl
+from pycomic_pkg import pycomic_999 as comic999
+from pycomic_pkg import pycomic_file as comic_file
+
+from pycomic_pkg import pycomic_lib as pylib
 from pycomic_pkg import user_agent_class as agentcl
 from pycomic_pkg import logging_class as logcl
 
@@ -32,46 +35,50 @@ logger = logcl.PersonalLog('pycomic', LOG_DIR)
 # logging.disable(logging.DEBUG)
 
 # pyconfig = pycl.Config(['.pycomic.ini', os.path.join(HOME, '.pycomic.ini')])
-pyconfig = pycl.Config(['pycomic_config.ini'])
+pyconfig = pylib.Config(['pycomic_config.ini'])
 
 
 def main():
 
+    # Source type
+    source_type = pyconfig.source()
 
-    # Config file class define
-
-    if len(sys.argv) == 1:
-        pycomic_help()
-    elif sys.argv[1] == 'add':
-        pycomic_add()
-    elif sys.argv[1] == 'download':
-        pycomic_download()
-    elif sys.argv[1] == 'fetch-chapter':
-        pycomic_fetch_chapter()
-    elif sys.argv[1] == 'fetch-url':
-        pycomic_fetch_url()
-    # elif sys.argv[1] == 'get-home':
-    #     pycomic_get_home()
-    elif sys.argv[1] == 'help':
-        pycomic_help()
-    elif sys.argv[1] == 'list':
-        pycomic_list()
-    elif sys.argv[1] == 'list-menu':
-        pycomic_list_menu()
-    elif sys.argv[1] == 'list-pdf':
-        pycomic_list_pdf()
-    elif sys.argv[1] == 'list-chapters':
-        pycomic_list_chapters()
-    elif sys.argv[1] == 'list-url':
-        pycomic_list_url()
-    elif sys.argv[1] == 'make-pdf':
-        pycomic_make_pdf()
-    # elif sys.argv[1] == 'set-home':
-    #     pycomic_set_home()
-    elif sys.argv[1] == 'verify':
-        pycomic_verify()
+    # Apply different method according to source type
+    if source_type.lower() == '999comics':
+        _comic999_action()
+    elif source_type.lower() == 'file':
+        _file_action()
     else:
-        pycomic_help()
+        pass
+
+    # if len(sys.argv) == 1:
+    #     pycomic_help()
+    # elif sys.argv[1] == 'add':
+    #     pycomic_add()
+    # elif sys.argv[1] == 'download':
+    #     pycomic_download()
+    # elif sys.argv[1] == 'fetch-chapter':
+    #     pycomic_fetch_chapter()
+    # elif sys.argv[1] == 'fetch-url':
+    #     pycomic_fetch_url()
+    # elif sys.argv[1] == 'help':
+    #     pycomic_help()
+    # elif sys.argv[1] == 'list':
+    #     pycomic_list()
+    # elif sys.argv[1] == 'list-menu':
+    #     pycomic_list_menu()
+    # elif sys.argv[1] == 'list-pdf':
+    #     pycomic_list_pdf()
+    # elif sys.argv[1] == 'list-chapters':
+    #     pycomic_list_chapters()
+    # elif sys.argv[1] == 'list-url':
+    #     pycomic_list_url()
+    # elif sys.argv[1] == 'make-pdf':
+    #     pycomic_make_pdf()
+    # elif sys.argv[1] == 'verify':
+    #     pycomic_verify()
+    # else:
+    #     pycomic_help()
 
 
 def pycomic_help():
@@ -720,28 +727,53 @@ def pycomic_verify():
     print('Verification completed.')
 
 
-# def pycomic_set_home():
-#     message = \
-#     """
-#     USAGE:
-#         pycomic.py set-home PATH
-#     NOTE:
-#         PATH must be an existed directory
-#     """
-#     try:
-#         home_path = sys.argv[2]
-#     except IndexError:
-#         print(message)
-#         sys.exit(1)
-#
-#     # Check for PATH existence
-#     if not os.path.isdir(home_path):
-#         logger.warning('New home path should be an exist directory.')
-#         sys.exit(1)
-#
-#     # Set new home path
-#     pyconfig.set_directory(home_path)
-#     print('Set new home path to {}'.format(pyconfig.directory()))
+def _comic999_action():
+    """
+    Action determination for source: 999comics
+    """
+
+    if len(sys.argv) == 1:
+        comic999.help()
+    elif sys.argv[1] == 'add':
+        comic999.add()
+    elif sys.argv[1] == 'download':
+        comic999.download()
+    elif sys.argv[1] == 'fetch-chapter':
+        comic999.fetch_chapter()
+    elif sys.argv[1] == 'fetch-url':
+        comic999.fetch_url()
+    elif sys.argv[1] == 'help':
+        comic999.help()
+    elif sys.argv[1] == 'list':
+        comic999.list()
+    elif sys.argv[1] == 'list-menu':
+        comic999.list_menu()
+    elif sys.argv[1] == 'list-pdf':
+        comic999.list_pdf()
+    elif sys.argv[1] == 'list-chapters':
+        comic999.list_chapters()
+    elif sys.argv[1] == 'list-url':
+        comic999.list_url()
+    elif sys.argv[1] == 'make-pdf':
+        comic999.make_pdf()
+    elif sys.argv[1] == 'verify':
+        comic999.verify()
+    else:
+        comic999.help()
+
+
+def _file_action():
+    """
+    Action determination for source: file
+    """
+
+    if len(sys.argv) == 1:
+        comic_file.help()
+    elif sys.argv[1] == 'add':
+        comic_file.add(pyconfig)
+    else:
+        comic_file.help()
+
 
 
 def _check(config):

@@ -4,10 +4,9 @@ Class definition for pycomic
 
 import os, sys
 import configparser,  pathlib
+import csv
 from pycomic_pkg import logging_class as logcl
 from pycomic_pkg import user_agent_class as agentcl
-# import logging_class as logcl
-# import user_agent_class as agentcl
 
 
 logger = logcl.PersonalLog('pycomic_class')
@@ -54,6 +53,7 @@ class Comic():
         self.pdf = os.path.join(path, self.english, filename)
 
 
+
 class Config():
 
     def __init__(self, candidates):
@@ -71,6 +71,10 @@ class Config():
 
         self.DEFAULT_SEC = 'DEFAULT'
         self.CONFIG_SEC = 'CONFIG'
+        self.TYPE_SEC = 'TYPE'
+
+        self.SOURCE = 'source'
+
         self.DEFAULT_DIR = 'pycomic'
         self.DIRECTORY = 'Directory'
         self.MENU = 'Menu'
@@ -79,6 +83,11 @@ class Config():
         self.COMICS = 'Comics'
         self.USERAGENT = 'User Agent'
         self.MAIN_MENU = 'Main Menu'
+
+        # For source type - file
+        self.RAW = 'raw'
+        self.REFINE = 'refine'
+
 
         # Get config information
         self._config = configparser.ConfigParser()
@@ -89,81 +98,63 @@ class Config():
             logger.warning('No config file found')
             sys.exit(1)
 
-        # Set default directory
-        # try:
-        #     self._config.set(self.DEFAULT_SEC, self.DIRECTORY, os.path.join(self.HOME,self.DEFAULT_DIR))
-        # except NoSectionError:
-        #     logger.warning('Cannot find {} section in ini files.'.format(self.DEFAULT_SEC))
-        #     sys.exit(5)
 
-        # Write directory option setting to file
-        # self._write_file()
-
-        # Set CONFIG section
-        # try:
-        #     self._config_section = self._config[self.CONFIG_SEC]
-        # except KeyError:
-        #     logger.warning('Cannot find {} section in ini files.'.format(self.CONFIG_SEC))
-        #     sys.exit(3)
-
-        # Read CONFIG section
-        # self._read_config()
-
-
-    def useragent(self):
-        config_section = self._read_section(self.CONFIG_SEC)
+    def useragent(self, section_title):
+        config_section = self._read_section(section_title)
         user_agent = agentcl.UserAgent().random_computer()
 
         if len(user_agent) != 0:
-            self._config.set(self.CONFIG_SEC, self.USERAGENT, user_agent)
+            self._config.set(section_title, self.USERAGENT, user_agent)
             self._write_file()
             return user_agent
         else:
             return self._read_key(config_section, self.USERAGENT)
 
-    def directory(self):
-        config_section = self._read_section(self.CONFIG_SEC)
+    def directory(self, section_title):
+        config_section = self._read_section(section_title)
         self._read_config(config_section)
         return self._directory
 
-    def menu(self):
-        config_section = self._read_section(self.CONFIG_SEC)
+    def menu(self, section_title):
+        config_section = self._read_section(section_title)
         self._read_config(config_section)
         return os.path.join(self._directory, self._menu)
 
-    def links(self):
-        config_section = self._read_section(self.CONFIG_SEC)
+    def links(self, section_title):
+        config_section = self._read_section(section_title)
         self._read_config(config_section)
         return os.path.join(self._directory, self._links)
 
-    def images(self):
-        config_section = self._read_section(self.CONFIG_SEC)
+    def images(self, section_title):
+        config_section = self._read_section(section_title)
         self._read_config(config_section)
         return os.path.join(self._directory, self._images)
 
-    def comics(self):
-        config_section = self._read_section(self.CONFIG_SEC)
+    def comics(self, section_title):
+        config_section = self._read_section(section_title)
         self._read_config(config_section)
         return os.path.join(self._directory, self._comics)
 
-    def main_menu(self):
-        config_section = self._read_section(self.CONFIG_SEC)
+    def main_menu(self, section_title):
+        config_section = self._read_section(section_title)
         self._read_config(config_section)
         return os.path.join(self._directory, self._menu, self._main_menu)
 
-    # def set_directory(self, path):
-    #     """
-    #     Input:
-    #         path : String - directory path
-    #     """
-    #     try:
-    #         self._config.set(self.CONFIG_SEC, self.DIRECTORY, os.path.join(path, self.DEFAULT_DIR))
-    #     except NoSectionError:
-    #         logger.warning('Cannot find {} section in ini files.'.format(self.CONFIG_SEC))
-    #         sys.exit(3)
-    #
-    #     # Save ini file
-    #     self._write_file()
+    def raw(self, section_title):
+        config_section = self._read_section(section_title)
+        self._read_config(config_section)
+        return os.path.join(self._directory, self._links, self._raw)
+
+    def refine(self, section_title):
+        config_section = self._read_section(section_title)
+        self._read_config(config_section)
+        return os.path.join(self._directory, self._links, self._refine)
+
+    def source(self):
+        type_section = self._read_section(self.TYPE_SEC)
+        return self._read_key(type_section, self.SOURCE)
+
+
 
 
     def _read_config(self, section):
@@ -174,6 +165,10 @@ class Config():
         self._comics = self._read_key(section, self.COMICS)
         self._user_agent = self._read_key(section, self.USERAGENT)
         self._main_menu = self._read_key(section, self.MAIN_MENU)
+
+        self._raw = self._read_key(section, self.RAW)
+        self._refine = self._read_key(section, self.REFINE)
+
 
 
     def _read_section(self, name):
@@ -199,14 +194,20 @@ class Config():
             section - Config file section
             key : String - ini file option key
         Return:
-            Value of the key
+            Value of the key - If key exist
+            None - If key not exist
         """
         value = section.get(key)
-        if value is None:
-            logger.warning('No {} key exist in ini files.'.format(key))
-            sys.exit(11)
-        else:
-            return value
+
+        # if value is None:
+            # raise NoOptionError('No {} exist in {} section'.format(key, section))
+
+        return value
+        # if value is None:
+            # logger.warning('No {} key exist in ini files.'.format(key))
+            # sys.exit(11)
+        # else:
+            # return value
 
 
     def _write_file(self):
@@ -216,6 +217,59 @@ class Config():
         for file in self._config_found:
             with open(file, 'w') as config_file:
                 self._config.write(config_file)
+
+
+
+def check_structure(config, sec_title):
+    """
+    Initial check for directory structure
+    """
+    # Check menu directory
+    os.makedirs(config.menu(sec_title), exist_ok=True)
+    # Check url directory
+    os.makedirs(config.links(sec_title), exist_ok=True)
+    # Check books directory
+    os.makedirs(config.images(sec_title), exist_ok=True)
+    # Check pdf directory
+    os.makedirs(config.comics(sec_title), exist_ok=True)
+
+    if not os.path.exists(config.main_menu(sec_title)):
+        file = open(config.main_menu(sec_title), mode='wt', encoding='utf-8')
+        file.close()
+
+
+def check_menu_duplicate(config, sec_title, ch_name, eng_name, number=None):
+    """
+    Check data in menu file to avoid information duplication
+    """
+    with open(config.main_menu(sec_title), mode='rt', encoding='utf-8') as file:
+        csv_reader = csv.reader(file)
+
+        for index, data in enumerate(csv_reader):
+            # English name duplication
+            if eng_name in data:
+                logger.info('Line {}: {} in {}'.format(index+1, eng_name, data))
+                sys.exit(103)
+            # Chinese name duplication
+            if ch_name in data:
+                logger.info('Line {}: {} in {}'.format(index+1, ch_name, data))
+                sys.exit(103)
+            # Number duplication
+            if number in data:
+                logger.info('Line {}: {} in {}'.format(index+1, number, data))
+                sys.exit(103)
+
+
+def write_menu_csv(config, sec_title, data):
+    """
+    Write new data to menu csv file
+
+    Parameters:
+        data - tuple
+    """
+    with open(config.main_menu(sec_title), mode='at', encoding='utf-8') as file:
+        csv_writer = csv.writer(file)
+        csv_writer.writerow(data)
 
 
 
@@ -231,5 +285,7 @@ if __name__ == '__main__':
     print(config.images())
     print(config.comics())
     print(config.main_menu())
+    print(config.raw())
+    print(config.refine())
 
-    # config.set_directory('/tmp')
+    print(config.source())
