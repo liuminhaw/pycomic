@@ -22,6 +22,7 @@ from pycomic_pkg import logging_class as logcl
 
 
 # Pre-defined
+VERSION = 'v1.2.2'
 HOME = str(Path.home())
 LOG_DIR = os.path.join(os.getcwd(), 'log')
 
@@ -50,8 +51,6 @@ def main():
         pycomic_fetch_chapter()
     elif sys.argv[1] == 'fetch-url':
         pycomic_fetch_url()
-    # elif sys.argv[1] == 'get-home':
-    #     pycomic_get_home()
     elif sys.argv[1] == 'help':
         pycomic_help()
     elif sys.argv[1] == 'list':
@@ -66,10 +65,10 @@ def main():
         pycomic_list_url()
     elif sys.argv[1] == 'make-pdf':
         pycomic_make_pdf()
-    # elif sys.argv[1] == 'set-home':
-    #     pycomic_set_home()
     elif sys.argv[1] == 'verify':
         pycomic_verify()
+    elif sys.argv[1] == 'version':
+        pycomic_version()
     else:
         pycomic_help()
 
@@ -90,6 +89,7 @@ def pycomic_help():
         pycomic list-url COMICNAME [PATTERN]
         pycomic make-pdf COMICNAME DIRECTORYTAG
         pycomic verify COMICNAME DIRECTORYTAG
+        pycomic version
     """
     print(message)
     sys.exit(1)
@@ -580,15 +580,6 @@ def pycomic_fetch_url():
     logger.info('{} {} fetch urls success.'.format(comic_name, request_identity))
 
 
-# def pycomic_get_home():
-#     message = \
-#     """
-#     USAGE:
-#         pycomic get-home
-#     """
-#     print('{}'.format(pyconfig.directory()))
-
-
 def pycomic_make_pdf():
     message = \
     """
@@ -720,28 +711,11 @@ def pycomic_verify():
     print('Verification completed.')
 
 
-# def pycomic_set_home():
-#     message = \
-#     """
-#     USAGE:
-#         pycomic.py set-home PATH
-#     NOTE:
-#         PATH must be an existed directory
-#     """
-#     try:
-#         home_path = sys.argv[2]
-#     except IndexError:
-#         print(message)
-#         sys.exit(1)
-#
-#     # Check for PATH existence
-#     if not os.path.isdir(home_path):
-#         logger.warning('New home path should be an exist directory.')
-#         sys.exit(1)
-#
-#     # Set new home path
-#     pyconfig.set_directory(home_path)
-#     print('Set new home path to {}'.format(pyconfig.directory()))
+def pycomic_version():
+    """
+    Show current using version of the program
+    """
+    print('Current version: {}'.format(VERSION))
 
 
 def _check(config):

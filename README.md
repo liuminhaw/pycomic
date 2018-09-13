@@ -15,7 +15,12 @@ Run `setup.sh` script to setup program for use
 `.pycomic.ini` config file will be create in user's home directory  
 Modify `.pycomic.ini` for custom configuration
 
-### Version 1.2.1
+### Version 1.2.2
+
+##### v1.2.2 Update
+- Add version function
+
+##### v1.2.1 Update
 - logging class update (Customize logging destination)
 - pycomic localize
 - Update setup script
@@ -32,6 +37,7 @@ Modify `.pycomic.ini` for custom configuration
 - list-menu
 - make-pdf
 - verify
+- version
 
 ##### add
 Store comic information to local.
@@ -94,3 +100,8 @@ Use `pycomic list-chapters` to find `DIRECTORYTAG`
 Verify download images's integrity
 
     pycomic.py verify COMICNAME DIRECTORYTAG
+
+##### version
+Show current using version of the program
+
+    pycomic.py version
