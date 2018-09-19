@@ -5,12 +5,14 @@ Author:
     haw
 
 Error Code:
-    11 - add function error
+    1 - Program usage error
+    11 - ComicNotFoundError catch
 """
 
 import sys, os
 import csv
 
+from pycomic_pkg import exceptions as pycomic_err
 from pycomic_pkg import url_collections as url
 from pycomic_pkg import logging_class as logcl
 from pycomic_pkg import pycomic_lib as pylib
@@ -27,7 +29,10 @@ def help():
     """
     USAGE:
         pycomic.py add ENGLISHNAME CHINESENAME
+        pycomic.py fetch-url COMICNAME
         pycomic.py help
+        pycomic.py list [PATTERN]
+        pycomic.py list-url [PATTERN]
     """
 
     print(message)
@@ -45,7 +50,7 @@ def add(pyconfig):
         chinese_name = sys.argv[3]
     except IndexError:
         print(message)
-        sys.exit(11)
+        sys.exit(1)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -67,15 +72,90 @@ def add(pyconfig):
 
     # Write data to main menu
     data = (english_name, chinese_name)
-    pylib.write_menu_csv(pyconfig, SECTION, data)
+    # pylib.write_menu_csv(pyconfig, SECTION, data)
+    pylib.append_csv(pyconfig.main_menu(SECTION), data)
 
     logger.info('Write {} to menu csv file success'.format(data))
 
     # Write raw data file
-    with open(os.path.join(pyconfig.raw(SECTION), english_name), mode='wt', encoding='utf-8') as file:
-        file.writelines('{}\n'.format(content) for content in contents)
+    comic = pylib.Comic(english_name, chinese_name)
+    pylib.write_txt(comic.file_path(pyconfig.raw(SECTION)), contents)
 
+    # Success message
     logger.info('Write contents to {} success'.format(pyconfig.raw(SECTION)))
+
+
+def fetch_url(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py fetch-url COMICNAME
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+    _check(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    try:
+       eng_name, ch_name = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+    # Extract links from raw file
+    comic = pylib.Comic(eng_name, ch_name)
+    urls = url.extract_images(comic.file_path(pyconfig.raw(SECTION)))
+
+    # Save links to extract file
+    pylib.write_csv(comic.file_path(pyconfig.refine(SECTION)), urls)
+
+    # Success message
+    logger.info('Extract file {} success'.format(eng_name))
+
+
+
+def list(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py list [PATTERN]
+    """
+    try:
+        pattern = sys.argv[2]
+    except IndexError:
+        pattern = ''
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+    _check(pyconfig, SECTION)
+
+    # Show all matching data
+    pylib.list_menu_csv(pyconfig, SECTION, pattern)
+
+
+def list_url(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py list_url [PATTERN]
+    """
+    try:
+        pattern = sys.argv[2]
+    except IndexError:
+        pattern = ''
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+    _check(pyconfig, SECTION)
+
+    # Show all matching data
+    pylib.list_files(pyconfig.refine(SECTION), pattern)
 
 
 
@@ -87,57 +167,3 @@ def _check(config, sec_title):
     os.makedirs(config.raw(sec_title), exist_ok=True)
     # Check url/refind directory
     os.makedirs(config.refine(sec_title), exist_ok=True)
-
-# Move to pycomic class
-# def _check(config, sec_title):
-#     """
-#     Initial check for directory structure
-#     """
-#     # Check menu directory
-#     os.makedirs(config.menu(sec_title), exist_ok=True)
-#     # Check url directory
-#     os.makedirs(config.links(sec_title), exist_ok=True)
-#     # Check books directory
-#     os.makedirs(config.images(sec_title), exist_ok=True)
-#     # Check pdf directory
-#     os.makedirs(config.comics(sec_title), exist_ok=True)
-#
-#     if not os.path.exists(config.main_menu(sec_title)):
-#         file = open(config.main_menu(sec_title), mode='wt', encoding='utf-8')
-#         file.close()
-
-
-# Move to pycomic class
-# def _check_menu_duplicate(config, sec_title, ch_name, eng_name, number=None):
-#     """
-#     Check data in menu file to avoid information duplication
-#     """
-#     with open(config.main_menu(sec_title), mode='rt', encoding='utf-8') as file:
-#         csv_reader = csv.reader(file)
-#
-#         for index, data in enumerate(csv_reader):
-#             # English name duplication
-#             if eng_name in data:
-#                 logger.info('Line {}: {} in {}'.format(index+1, eng_name, data))
-#                 sys.exit(103)
-#             # Chinese name duplication
-#             if ch_name in data:
-#                 logger.info('Line {}: {} in {}'.format(index+1, ch_name, data))
-#                 sys.exit(103)
-#             # Number duplication
-#             if number in data:
-#                 logger.info('Line {}: {} in {}'.format(index+1, number, data))
-#                 sys.exit(103)
-
-
-# Move to pycomic class
-# def _write_menu_csv(config, sec_title, data):
-#     """
-#     Write new data to menu csv file
-#
-#     Parameters:
-#         data - tuple
-#     """
-#     with open(config.main_menu(sec_title), mode='at', encoding='utf-8') as file:
-#         csv_writer = csv.writer(file)
-#         csv_writer.writerow(data)

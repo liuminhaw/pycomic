@@ -1,10 +1,15 @@
 """
-Class definition for pycomic
+Class definition for pycomic program
+
+Author:
+    haw
 """
 
 import os, sys
 import configparser,  pathlib
-import csv
+import csv, re
+
+from pycomic_pkg import exceptions as pycomic_err
 from pycomic_pkg import logging_class as logcl
 from pycomic_pkg import user_agent_class as agentcl
 
@@ -13,10 +18,10 @@ logger = logcl.PersonalLog('pycomic_class')
 
 class Comic():
 
-    def __init__(self, eng, ch, num):
-        self.english = eng
-        self.chinese = ch
-        self.number = num
+    def __init__(self, english, chinese, number=''):
+        self.english = english
+        self.chinese = chinese
+        self.number = number
 
     def __str__(self):
         return '{} - {}: {}'.format(self.english, self.chinese, self.number)
@@ -51,6 +56,15 @@ class Comic():
     def def_pdf(self, path, name):
         filename = name + '.pdf'
         self.pdf = os.path.join(path, self.english, filename)
+
+    def file_path(self, path, name=None):
+        if name:
+            return os.path.join(path, self.english, name)
+        else:
+            return os.path.join(path, self.english)
+
+        # filename = self.english + '.txt'
+        # self.raw_file = os.path.join(path, filename)
 
 
 
@@ -155,8 +169,6 @@ class Config():
         return self._read_key(type_section, self.SOURCE)
 
 
-
-
     def _read_config(self, section):
         self._directory = self._read_key(section, self.DIRECTORY)
         self._menu = self._read_key(section, self.MENU)
@@ -199,15 +211,7 @@ class Config():
         """
         value = section.get(key)
 
-        # if value is None:
-            # raise NoOptionError('No {} exist in {} section'.format(key, section))
-
         return value
-        # if value is None:
-            # logger.warning('No {} key exist in ini files.'.format(key))
-            # sys.exit(11)
-        # else:
-            # return value
 
 
     def _write_file(self):
@@ -218,6 +222,8 @@ class Config():
             with open(file, 'w') as config_file:
                 self._config.write(config_file)
 
+
+##### Functions #####
 
 
 def check_structure(config, sec_title):
@@ -241,6 +247,9 @@ def check_structure(config, sec_title):
 def check_menu_duplicate(config, sec_title, ch_name, eng_name, number=None):
     """
     Check data in menu file to avoid information duplication
+
+    Error Code:
+        103 - Information duplication in menu csv file
     """
     with open(config.main_menu(sec_title), mode='rt', encoding='utf-8') as file:
         csv_reader = csv.reader(file)
@@ -260,16 +269,125 @@ def check_menu_duplicate(config, sec_title, ch_name, eng_name, number=None):
                 sys.exit(103)
 
 
-def write_menu_csv(config, sec_title, data):
+# def write_menu_csv(config, sec_title, data):
+#     """
+#     Write new data to menu csv file
+#
+#     Parameters:
+#         data - tuple
+#     """
+#     with open(config.main_menu(sec_title), mode='at', encoding='utf-8') as file:
+#         csv_writer = csv.writer(file)
+#         csv_writer.writerow(data)
+
+
+def write_csv(path, data):
     """
-    Write new data to menu csv file
+    Write data to csv file
 
     Parameters:
-        data - tuple
+        data - Iterable
     """
-    with open(config.main_menu(sec_title), mode='at', encoding='utf-8') as file:
+    with open(path, mode='wt', encoding='utf-8') as file:
+        csv_writer = csv.writer(file)
+        [csv_writer.writerow((index, item)) for index, item in enumerate(data)]
+
+
+def append_csv(path, data):
+    """
+    Append data to csv file
+
+    Parameters:
+        data - Iterable
+    """
+    with open(path, mode='at', encoding='utf-8') as file:
         csv_writer = csv.writer(file)
         csv_writer.writerow(data)
+
+
+def write_txt(path, data):
+    """
+    Write data to text file
+
+    Parameters:
+        data - iterable
+    """
+    with open(path, mode='wt', encoding='utf-8') as file:
+        file.writelines('{}\n'.format(content) for content in data)
+
+
+def append_txt(path, data):
+    """
+    Append data to text file
+
+    Parameter:
+        data - iterable
+    """
+    with open(path, mode='at', encoding='utf-8') as file:
+        file.writelines('{}\n'.format(content) for content in data)
+
+
+def list_menu_csv(config, sec_title, pattern):
+    """
+    List contents in menu csv file which match the pattern
+    """
+    print('------ START ------')
+    re_pattern = re.compile(r'.*{}.*'.format(pattern), re.IGNORECASE)
+
+    with open(config.main_menu(sec_title), mode='rt', encoding='utf-8') as file:
+        csv_reader = csv.reader(file)
+        for data in csv_reader:
+            # Assign value from read data
+            try:
+                eng_name = data[0]
+                ch_name = data[1]
+                number = data[2]
+            except IndexError:
+                number = '------'
+
+            # Search for matching pattern
+            if re_pattern.search(eng_name) or re_pattern.search(ch_name):
+                print('{:6} : {:20} {:10}'.format(number, eng_name, ch_name))
+
+    print('------- END -------')
+
+
+def list_files(directory, pattern):
+    """
+    List files in directory that matches the pattern
+    """
+    # Get files in directory
+    re_pattern = re.compile(r'.*{}.*'.format(pattern), re.IGNORECASE)
+    files = os.listdir(directory)
+    files.sort()
+
+    # Search for matching result
+    print('------ START ------')
+    for index, file in enumerate(files):
+        if re_pattern.search(file):
+            print('FILE TAG {:4d} : {:>20}'.format(index, file))
+    print('------- END -------')
+
+
+
+def find_menu_comic(config, sec_title, comic_name):
+    """
+    Finding comic in menu csv file
+
+    Exist: Return tuple of found data
+    Not Exist: Raise ComicNotFoundError
+    """
+    # Search for comic name in menu csv file
+    with open(config.main_menu(sec_title), mode='rt', encoding='utf-8') as file:
+        csv_reader = csv.reader(file)
+        for data in csv_reader:
+            if comic_name.lower() in map(str.lower, data):
+                return data
+
+    # No match found, raise ComicNotFoundError
+    raise pycomic_err.ComicNotFoundError
+
+
 
 
 

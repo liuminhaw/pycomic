@@ -771,6 +771,12 @@ def _file_action():
         comic_file.help()
     elif sys.argv[1] == 'add':
         comic_file.add(pyconfig)
+    elif sys.argv[1] == 'list':
+        comic_file.list(pyconfig)
+    elif sys.argv[1] == 'list-url':
+        comic_file.list_url(pyconfig)
+    elif sys.argv[1] == 'fetch-url':
+        comic_file.fetch_url(pyconfig)
     else:
         comic_file.help()
 
