@@ -22,7 +22,7 @@ from pycomic_pkg import logging_class as logcl
 
 
 # Pre-defined
-VERSION = 'v1.2.2'
+VERSION = 'v1.3.0'
 HOME = str(Path.home())
 LOG_DIR = os.path.join(os.getcwd(), 'log')
 
@@ -30,9 +30,7 @@ COMIC_999_URL_HOME = 'https://www.999comics.com'
 COMIC_999_URL = 'https://www.999comics.com/comic/'
 
 logger = logcl.PersonalLog('pycomic', LOG_DIR)
-# logging.disable(logging.DEBUG)
 
-# pyconfig = pycl.Config(['.pycomic.ini', os.path.join(HOME, '.pycomic.ini')])
 pyconfig = pycl.Config(['pycomic_config.ini'])
 
 
@@ -45,6 +43,8 @@ def main():
         pycomic_help()
     elif sys.argv[1] == 'add':
         pycomic_add()
+    elif sys.argv[1] == 'check':
+        pycomic_check()
     elif sys.argv[1] == 'download':
         pycomic_download()
     elif sys.argv[1] == 'fetch-chapter':
@@ -65,6 +65,8 @@ def main():
         pycomic_list_url()
     elif sys.argv[1] == 'make-pdf':
         pycomic_make_pdf()
+    elif sys.argv[1] == 'uncheck':
+        pycomic_uncheck()
     elif sys.argv[1] == 'verify':
         pycomic_verify()
     elif sys.argv[1] == 'version':
@@ -78,6 +80,7 @@ def pycomic_help():
     """
     USAGE:
         pycomic add ENGLISHNAME CHINESENAME NUMBER
+        pycomic check COMICNAME
         pycomic download COMICNAME FILETAG
         pycomic fetch-chapter COMICNAME
         pycomic fetch-url COMICNAME IDENTITYNUM
@@ -88,6 +91,7 @@ def pycomic_help():
         pycomic list-pdf COMICNAME [PATTERN]
         pycomic list-url COMICNAME [PATTERN]
         pycomic make-pdf COMICNAME DIRECTORYTAG
+        pycomic uncheck COMICNAME
         pycomic verify COMICNAME DIRECTORYTAG
         pycomic version
     """
@@ -141,6 +145,45 @@ def pycomic_add():
     logger.info('Write {} to {} success.'.format(data, menu_csv))
 
 
+def pycomic_check():
+    message = \
+    """
+    USAGE:
+        pycomic check COMICNAME
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    _check(pyconfig)
+
+    # Make sure comic name exist in menu csv file
+    comic = _comic_in_menu(comic_name)
+
+    # Read in csv file
+    renew_list = []
+    data_complete = None
+    with open(pyconfig.main_menu(), mode='rt', encoding='utf-8') as file:
+        csv_reader = csv.reader(file)
+        for data in csv_reader:
+            if (comic.english in data) or (comic.chinese in data):
+                data_complete = data
+                data_complete[3] = 'Check'
+            else:
+                renew_list.append(data)
+
+    # Write back and update csv file
+    with open(pyconfig.main_menu(), mode='wt', encoding='utf-8') as file:
+        csv_writer = csv.writer(file)
+        for data in renew_list:
+            csv_writer.writerow(data)
+        csv_writer.writerow(data_complete)
+
+    logger.info('{} mark as progress completed'.format(comic.english))
+
+
 def pycomic_list():
     message = \
     """
@@ -160,7 +203,7 @@ def pycomic_list():
         csv_reader = csv.reader(csv_file)
         for comic_data in csv_reader:
             if re_pattern.search(comic_data[0]) != None or re_pattern.search(comic_data[1]) != None:
-                print('{:6} : {:20} {:10}'.format(comic_data[2], comic_data[0], comic_data[1]))
+                print('{:6} : {:20} {:10} {:10}'.format(comic_data[2], comic_data[0], comic_data[3], comic_data[1]))
     print('------ END ------')
 
 
@@ -650,6 +693,45 @@ def pycomic_make_pdf():
     logger.info('Make PDF {} success.'.format(book_name))
 
 
+def pycomic_uncheck():
+    message = \
+    """
+    USAGE:
+        pycomic uncheck COMICNAME
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    _check(pyconfig)
+
+    # Make sure comic name exist in menu csv file
+    comic = _comic_in_menu(comic_name)
+
+    # Read in csv file
+    renew_list = []
+    data_renew = None
+    with open(pyconfig.main_menu(), mode='rt', encoding='utf-8') as file:
+        csv_reader = csv.reader(file)
+        for data in csv_reader:
+            if (comic.english in data) or (comic.chinese in data):
+                data_uncheck = data
+                data_uncheck[3] = '-----'
+            else:
+                renew_list.append(data)
+
+    # Write back and update csv file
+    with open(pyconfig.main_menu(), mode='wt', encoding='utf-8') as file:
+        csv_writer = csv.writer(file)
+        csv_writer.writerow(data_uncheck)
+        for data in renew_list:
+            csv_writer.writerow(data)
+
+    logger.info('{} mark as in progress'.format(comic.english))
+
+
 def pycomic_verify():
     message = \
     """
@@ -708,7 +790,7 @@ def pycomic_verify():
         finally:
             img.close()
 
-    print('Verification completed.')
+    print('Verification {} completed'.format(book_name))
 
 
 def pycomic_version():

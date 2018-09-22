@@ -12,21 +12,19 @@ Run `setup.sh` script to setup program for use
     ./setup.sh DESTINATION
 
 #### Configuration
-`.pycomic.ini` config file will be create in user's home directory  
-Modify `.pycomic.ini` for custom configuration
+`pycomic_config.ini` config file will be create in user's home directory  
+Modify `pycomic_config.ini` for custom configuration
 
-### Version 1.2.2
+### Version 1.3.0
 
-##### v1.2.2 Update
-- Add version function
-
-##### v1.2.1 Update
-- logging class update (Customize logging destination)
-- pycomic localize
-- Update setup script
+##### v1.3.0 Update
+- Implement check function
+- Implement uncheck function
+- Showing book name when verify
 
 ##### Methods
 - add
+- check
 - download
 - fetch-chapter
 - fetch-url
@@ -36,6 +34,7 @@ Modify `.pycomic.ini` for custom configuration
 - list-pdf
 - list-menu
 - make-pdf
+- uncheck
 - verify
 - version
 
@@ -43,6 +42,11 @@ Modify `.pycomic.ini` for custom configuration
 Store comic information to local.
 
     pycomic.py add ENGLISHNAME CHINESENAME NUMBER
+
+##### check
+Mark `COMICNAME` progression in menu file as complete
+
+    pycomic.py check COMICNAME
 
 ##### download
 Download comic
@@ -95,6 +99,11 @@ Use downloaded comic images to make pdf file
 Use `pycomic list-chapters` to find `DIRECTORYTAG`
 
     pycomic.py make-pdf COMICNAME DIRECTORYTAG
+
+##### uncheck
+Remove the completion mark of `COMICNAME` in menu file
+
+    pycomic.py uncheck COMICNAME
 
 ##### verify
 Verify download images's integrity
