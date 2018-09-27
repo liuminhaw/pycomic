@@ -22,6 +22,7 @@ class Comic():
         self.english = english
         self.chinese = chinese
         self.number = number
+        self.path = dict()
 
     def __str__(self):
         return '{} - {}: {}'.format(self.english, self.chinese, self.number)
@@ -57,14 +58,12 @@ class Comic():
         filename = name + '.pdf'
         self.pdf = os.path.join(path, self.english, filename)
 
-    def file_path(self, path, name=None):
+    def file_path(self, path, key, name=None):
         if name:
-            return os.path.join(path, self.english, name)
+            self.path[key] = os.path.join(path, self.english, name)
         else:
-            return os.path.join(path, self.english)
+            self.path[key] = os.path.join(path, self.english)
 
-        # filename = self.english + '.txt'
-        # self.raw_file = os.path.join(path, filename)
 
 
 
@@ -305,6 +304,16 @@ def append_csv(path, data):
         csv_writer.writerow(data)
 
 
+def read_csv(path):
+    """
+    Generate data from path of csv file
+    """
+    with open(path, mode='rt', encoding='utf-8') as file:
+        csv_reader = csv_reader(file)
+        for data in csv_reader:
+            yield data
+
+
 def write_txt(path, data):
     """
     Write data to text file
@@ -341,13 +350,14 @@ def list_menu_csv(config, sec_title, pattern):
             try:
                 eng_name = data[0]
                 ch_name = data[1]
-                number = data[2]
+                status = data[2]
+                number = data[3]
             except IndexError:
                 number = '------'
 
             # Search for matching pattern
             if re_pattern.search(eng_name) or re_pattern.search(ch_name):
-                print('{:6} : {:20} {:10}'.format(number, eng_name, ch_name))
+                print('{:6} : {:20} {:10} {:10}'.format(number, eng_name, status, ch_name))
 
     print('------- END -------')
 

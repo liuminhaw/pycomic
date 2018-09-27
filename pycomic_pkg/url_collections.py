@@ -4,7 +4,7 @@ Program:
 Author:
     haw
 Version:
-    0.1.0
+    0.1.1
 """
 
 import os, re
@@ -57,10 +57,14 @@ def download_image(url, target_path, header=None):
     Parameters:
         file_path - File storing destination
     Error:
-        RuntimeError - Raised if image request failed
+        FileNotFoundError - File path not found
+        urlError - Raised if image request failed
     """
     # Request for image file
-    img_request = _image_request(url, header)
+    try:
+        img_request = _image_request(url, header)
+    except RuntimeError:
+        raise urlError('Request for image {} failed'.format(url))
 
     # Write image to file_path
     _image_write(img_request, target_path)
@@ -76,9 +80,12 @@ def download_images(urls, target_directory, header=None):
         urls - iterable
     Error:
         FileNotFoundError - File path not found
+    Reutrn:
+        List of error messages that occur during image download
     """
+    errors = []
 
-    for url in urls:
+    for index, url in enumerate(urls):
         for _ in range(10):
             try:
                 img_request = _image_request(url, header)
@@ -87,10 +94,12 @@ def download_images(urls, target_directory, header=None):
             else:
                 filename = datetime.datetime.now().strftime('%Y%m%dT%H%M%SMS%f')
                 _image_write(img_request, os.path.join(target_directory, filename))
-                print('Download url {} success'.format(url))
+                print('Download index {:>3} - URL {} success'.format(index, url))
                 break
         else:
-            print('Exceed request attempt limit: {}'.format(url))
+            errors.append('Index {:>3} exceed request attempt limit: {}'.format(index, url))
+
+    return errors
 
 
 
@@ -134,6 +143,13 @@ def _image_write(image, file_path):
         print('Write file error {}: {}'.format(err.errno, err.strerror))
         raise
 
+
+
+class urlError(Exception):
+    """
+    Raise when error occurs during the use of url_collections module
+    """
+    pass
 
 
 if __name__ == '__main__':

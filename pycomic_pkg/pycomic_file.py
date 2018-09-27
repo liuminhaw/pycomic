@@ -7,6 +7,7 @@ Author:
 Error Code:
     1 - Program usage error
     11 - ComicNotFoundError catch
+    21 - Directory exist error
 """
 
 import sys, os
@@ -29,6 +30,7 @@ def help():
     """
     USAGE:
         pycomic.py add ENGLISHNAME CHINESENAME
+        pycomic.py download COMICNAME
         pycomic.py fetch-url COMICNAME
         pycomic.py help
         pycomic.py list [PATTERN]
@@ -48,6 +50,7 @@ def add(pyconfig):
     try:
         english_name = sys.argv[2]
         chinese_name = sys.argv[3]
+        process_state = '------'
     except IndexError:
         print(message)
         sys.exit(1)
@@ -71,7 +74,7 @@ def add(pyconfig):
         contents.append(line)
 
     # Write data to main menu
-    data = (english_name, chinese_name)
+    data = (english_name, chinese_name, process_state)
     # pylib.write_menu_csv(pyconfig, SECTION, data)
     pylib.append_csv(pyconfig.main_menu(SECTION), data)
 
@@ -79,10 +82,54 @@ def add(pyconfig):
 
     # Write raw data file
     comic = pylib.Comic(english_name, chinese_name)
-    pylib.write_txt(comic.file_path(pyconfig.raw(SECTION)), contents)
+    comic.file_path(pyconfig.raw(SECTION), 'raw')
+    pylib.write_txt(comic.path['raw'], contents)
 
     # Success message
-    logger.info('Write contents to {} success'.format(pyconfig.raw(SECTION)))
+    logger.info('Write contents to {} success'.format(comic.path['raw']))
+
+
+def download(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py download COMICNAME
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+    _check(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    try:
+        eng_name, ch_name, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name)
+    comic.file_path(pyconfig.images(SECTION), 'book')
+    comic.file_path(pyconfig.refine(SECTION), 'refine')
+
+    # Download images
+    try:
+        os.mkdir(comic.path['book'])
+    except FileExistsError:
+        logger.warning('Directory {} already exist'.format(comic.path['book']))
+        sys.exit(21)
+    urls = url.extract_images(comic.path['refine'])
+    errors = url.download_images(urls, comic.path['book'], header=pyconfig.useragent(SECTION))
+
+    # Show download error messages
+    for error_message in errors:
+        logger.info(error_message)
+
 
 
 def fetch_url(pyconfig):
@@ -103,17 +150,21 @@ def fetch_url(pyconfig):
 
     # Find comic from menu csv file
     try:
-       eng_name, ch_name = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+       eng_name, ch_name, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
     except pycomic_err.ComicNotFoundError:
         logger.info('No match to {} found'.format(comic_name))
         sys.exit(11)
 
-    # Extract links from raw file
+    # Define comic object
     comic = pylib.Comic(eng_name, ch_name)
-    urls = url.extract_images(comic.file_path(pyconfig.raw(SECTION)))
+    comic.file_path(pyconfig.raw(SECTION), 'raw')
+    comic.file_path(pyconfig.refine(SECTION), 'refine')
+
+    # Extract links
+    urls = url.extract_images(comic.path['raw'])
 
     # Save links to extract file
-    pylib.write_csv(comic.file_path(pyconfig.refine(SECTION)), urls)
+    pylib.write_csv(comic.path['refine'], urls)
 
     # Success message
     logger.info('Extract file {} success'.format(eng_name))

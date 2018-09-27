@@ -587,15 +587,6 @@ def pycomic_fetch_url():
     logger.info('{} {} fetch urls success.'.format(comic_name, request_identity))
 
 
-# def pycomic_get_home():
-#     message = \
-#     """
-#     USAGE:
-#         pycomic get-home
-#     """
-#     print('{}'.format(pyconfig.directory()))
-
-
 def pycomic_make_pdf():
     message = \
     """
@@ -771,6 +762,8 @@ def _file_action():
         comic_file.help()
     elif sys.argv[1] == 'add':
         comic_file.add(pyconfig)
+    elif sys.argv[1] == 'download':
+        comic_file.download(pyconfig)
     elif sys.argv[1] == 'list':
         comic_file.list(pyconfig)
     elif sys.argv[1] == 'list-url':
