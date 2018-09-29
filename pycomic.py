@@ -109,7 +109,8 @@ def pycomic_add():
         english_name = sys.argv[2]
         chinese_name = sys.argv[3]
         number = sys.argv[4]
-        data = (english_name, chinese_name, number)
+        state = '------'
+        data = (english_name, chinese_name, number, state)
     except IndexError:
         print(message)
         sys.exit(1)
