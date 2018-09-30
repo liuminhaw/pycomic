@@ -766,6 +766,8 @@ def _file_action():
         comic_file.download(pyconfig)
     elif sys.argv[1] == 'list':
         comic_file.list(pyconfig)
+    elif sys.argv[1] == 'list-books':
+        comic_file.list_books(pyconfig)
     elif sys.argv[1] == 'list-url':
         comic_file.list_url(pyconfig)
     elif sys.argv[1] == 'fetch-url':

@@ -7,7 +7,7 @@ Author:
 
 import os, sys
 import configparser,  pathlib
-import csv, re
+import csv, re, shutil
 
 from pycomic_pkg import exceptions as pycomic_err
 from pycomic_pkg import logging_class as logcl
@@ -280,7 +280,7 @@ def check_menu_duplicate(config, sec_title, ch_name, eng_name, number=None):
 #         csv_writer.writerow(data)
 
 
-def write_csv(path, data):
+def write_csv(path, data, index=True):
     """
     Write data to csv file
 
@@ -289,7 +289,10 @@ def write_csv(path, data):
     """
     with open(path, mode='wt', encoding='utf-8') as file:
         csv_writer = csv.writer(file)
-        [csv_writer.writerow((index, item)) for index, item in enumerate(data)]
+        if index:
+            [csv_writer.writerow((index, item)) for index, item in enumerate(data)]
+        else:
+            [csv_writer.writerow(item) for item in data]
 
 
 def append_csv(path, data):
@@ -306,12 +309,19 @@ def append_csv(path, data):
 
 def read_csv(path):
     """
-    Generate data from path of csv file
+    Read data from path of csv file
+
+    Return:
+        List of read data
     """
+    contents = []
+
     with open(path, mode='rt', encoding='utf-8') as file:
-        csv_reader = csv_reader(file)
+        csv_reader = csv.reader(file)
         for data in csv_reader:
-            yield data
+            contents.append(data)
+
+    return contents
 
 
 def write_txt(path, data):
@@ -347,13 +357,10 @@ def list_menu_csv(config, sec_title, pattern):
         csv_reader = csv.reader(file)
         for data in csv_reader:
             # Assign value from read data
-            try:
-                eng_name = data[0]
-                ch_name = data[1]
-                status = data[2]
-                number = data[3]
-            except IndexError:
-                number = '------'
+            eng_name = data[0]
+            ch_name = data[1]
+            number = data[2]
+            status = data[3]
 
             # Search for matching pattern
             if re_pattern.search(eng_name) or re_pattern.search(ch_name):
@@ -398,6 +405,26 @@ def find_menu_comic(config, sec_title, comic_name):
     raise pycomic_err.ComicNotFoundError
 
 
+def update_menu(path, data):
+    """
+    Update menu csv file when with data
+
+    Error:
+        Raise UpdateError if writing new file failed
+    """
+    # Make backup before update
+    bkp_path = path + '.bkp'
+    shutil.copyfile(path, bkp_path)
+
+    try:
+        csv_data = read_csv(path)
+        csv_data.insert(0, data)
+        write_csv(path, csv_data, index=False)
+    except:
+        shutil.copyfile(bkp_path, path)
+        raise pycomic_err.UpdateError
+    else:
+        os.remove(bkp_path)
 
 
 

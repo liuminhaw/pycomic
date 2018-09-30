@@ -7,6 +7,7 @@ Author:
 Error Code:
     1 - Program usage error
     11 - ComicNotFoundError catch
+    12 - UpdateError catch
     21 - Directory exist error
 """
 
@@ -34,6 +35,7 @@ def help():
         pycomic.py fetch-url COMICNAME
         pycomic.py help
         pycomic.py list [PATTERN]
+        pycomic.py list-books [PATTERN]
         pycomic.py list-url [PATTERN]
     """
 
@@ -50,6 +52,7 @@ def add(pyconfig):
     try:
         english_name = sys.argv[2]
         chinese_name = sys.argv[3]
+        book_number = '------'
         process_state = '------'
     except IndexError:
         print(message)
@@ -73,16 +76,21 @@ def add(pyconfig):
             break
         contents.append(line)
 
+    # Define Comic object
+    comic = pylib.Comic(english_name, chinese_name)
+    comic.file_path(pyconfig.raw(SECTION), 'raw')
+
     # Write data to main menu
-    data = (english_name, chinese_name, process_state)
-    # pylib.write_menu_csv(pyconfig, SECTION, data)
-    pylib.append_csv(pyconfig.main_menu(SECTION), data)
+    data = [english_name, chinese_name, book_number, process_state]
+    try:
+        pylib.update_menu(pyconfig.main_menu(SECTION), data)
+    except pycomic_err.UpdateError:
+        logger.warning('Update {} failed'.format(pyconfig.main_menu(SECTION)))
+        sys.exit(12)
 
     logger.info('Write {} to menu csv file success'.format(data))
 
     # Write raw data file
-    comic = pylib.Comic(english_name, chinese_name)
-    comic.file_path(pyconfig.raw(SECTION), 'raw')
     pylib.write_txt(comic.path['raw'], contents)
 
     # Success message
@@ -107,7 +115,7 @@ def download(pyconfig):
 
     # Find comic from menu csv file
     try:
-        eng_name, ch_name, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+        eng_name, ch_name, number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
     except pycomic_err.ComicNotFoundError:
         logger.info('No match to {} found'.format(comic_name))
         sys.exit(11)
@@ -150,7 +158,7 @@ def fetch_url(pyconfig):
 
     # Find comic from menu csv file
     try:
-       eng_name, ch_name, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+       eng_name, ch_name, number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
     except pycomic_err.ComicNotFoundError:
         logger.info('No match to {} found'.format(comic_name))
         sys.exit(11)
@@ -190,11 +198,30 @@ def list(pyconfig):
     pylib.list_menu_csv(pyconfig, SECTION, pattern)
 
 
+def list_books(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py list-books [PATTERN]
+    """
+    try:
+        pattern = sys.argv[2]
+    except IndexError:
+        pattern = ''
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+    _check(pyconfig, SECTION)
+
+    # Show all matching csv_data
+    pylib.list_files(pyconfig.images(SECTION), pattern)
+
+
 def list_url(pyconfig):
     message = \
     """
     USAGE:
-        pycomic.py list_url [PATTERN]
+        pycomic.py list-url [PATTERN]
     """
     try:
         pattern = sys.argv[2]
