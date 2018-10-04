@@ -9,6 +9,8 @@ import os, sys
 import configparser,  pathlib
 import csv, re, shutil
 
+from PIL import Image
+
 from pycomic_pkg import exceptions as pycomic_err
 from pycomic_pkg import logging_class as logcl
 from pycomic_pkg import user_agent_class as agentcl
@@ -425,6 +427,32 @@ def update_menu(path, data):
         raise pycomic_err.UpdateError
     else:
         os.remove(bkp_path)
+
+
+def verify_images(path):
+    """
+    Images validation within path directory
+
+    Return:
+        List of truncated images
+    Error:
+        Raise FileNotFoundError if path does not exist
+    """
+    truncated_images = []
+    images = os.listdir(path)
+    images.sort()
+
+    for image in images:
+        img = Image.open(os.path.join(path, image))
+        try:
+            img.load()
+        except IOError:
+            truncated_images.append(os.path.join(path, image))
+        finally:
+            img.close()
+
+    return truncated_images
+
 
 
 

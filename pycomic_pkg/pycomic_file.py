@@ -8,6 +8,7 @@ Error Code:
     1 - Program usage error
     11 - ComicNotFoundError catch
     12 - UpdateError catch
+    13 - FileNotFoundError catch
     21 - Directory exist error
 """
 
@@ -37,6 +38,7 @@ def help():
         pycomic.py list [PATTERN]
         pycomic.py list-books [PATTERN]
         pycomic.py list-url [PATTERN]
+        pycomic.py verify COMICNAME
     """
 
     print(message)
@@ -234,6 +236,45 @@ def list_url(pyconfig):
 
     # Show all matching data
     pylib.list_files(pyconfig.refine(SECTION), pattern)
+
+
+def verify(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py verify COMICNAME
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+    _check(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    try:
+        eng_name, ch_name, number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name)
+    comic.file_path(pyconfig.images(SECTION), 'books')
+
+    # Verification
+    try:
+        truncated = pylib.verify_images(comic.path['books'])
+    except FileNotFoundError:
+        logger.warning('Directory {} not exist'.format(comic.path['books']))
+        sys.exit(13)
+
+    for image in truncated:
+        logger.info('Image file {} is truncated'.format(image))
+    logger.info('{} verification completed'.format(comic_name))
 
 
 
