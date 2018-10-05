@@ -768,8 +768,12 @@ def _file_action():
         comic_file.list(pyconfig)
     elif sys.argv[1] == 'list-books':
         comic_file.list_books(pyconfig)
+    elif sys.argv[1] == 'list-pdf':
+        comic_file.list_pdf(pyconfig)
     elif sys.argv[1] == 'list-url':
         comic_file.list_url(pyconfig)
+    elif sys.argv[1] == 'make-pdf':
+        comic_file.make_pdf(pyconfig)
     elif sys.argv[1] == 'fetch-url':
         comic_file.fetch_url(pyconfig)
     elif sys.argv[1] == 'verify':

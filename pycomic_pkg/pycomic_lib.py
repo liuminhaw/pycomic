@@ -454,6 +454,26 @@ def verify_images(path):
     return truncated_images
 
 
+def make_pdf(input_dir, output_path):
+    """
+    Produce pdf file output_path using images in input_dir
+
+    pycomic_err.FileExistError:
+        Raise if file already exist
+    FileNotFoundError:
+        Raise if path does not exist
+    """
+    if os.path.isfile(output_path):
+        raise pycomic_err.FileExistError
+
+    pages = []
+    images = os.listdir(input_dir)
+    images.sort()
+
+    for image in images:
+        pages.append(Image.open(os.path.join(input_dir, image)))
+    pages[0].save(output_path, 'PDF', resolution=100, save_all=True, append_images=pages[1:])
+
 
 
 if __name__ == '__main__':

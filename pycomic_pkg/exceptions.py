@@ -25,3 +25,10 @@ class UpdateError(pycomicError):
     Raise when failed to update file content
     """
     pass
+
+
+class FileExistError(pycomicError):
+    """
+    Raise when file already exist
+    """
+    pass

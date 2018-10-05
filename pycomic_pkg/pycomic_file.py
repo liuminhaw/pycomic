@@ -9,6 +9,7 @@ Error Code:
     11 - ComicNotFoundError catch
     12 - UpdateError catch
     13 - FileNotFoundError catch
+    14 - FileExistError catch
     21 - Directory exist error
 """
 
@@ -37,7 +38,9 @@ def help():
         pycomic.py help
         pycomic.py list [PATTERN]
         pycomic.py list-books [PATTERN]
+        pycomic.py list-pdf [PATTERN]
         pycomic.py list-url [PATTERN]
+        pycomic.py make-pdf COMICNAME
         pycomic.py verify COMICNAME
     """
 
@@ -219,6 +222,25 @@ def list_books(pyconfig):
     pylib.list_files(pyconfig.images(SECTION), pattern)
 
 
+def list_pdf(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py list-pdf [PATTERN]
+    """
+    try:
+        pattern = sys.argv[2]
+    except IndexError:
+        pattern = ''
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+    _check(pyconfig, SECTION)
+
+    # Show all matching data
+    pylib.list_files(pyconfig.comics(SECTION), pattern)
+
+
 def list_url(pyconfig):
     message = \
     """
@@ -236,6 +258,47 @@ def list_url(pyconfig):
 
     # Show all matching data
     pylib.list_files(pyconfig.refine(SECTION), pattern)
+
+
+def make_pdf(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py make-pdf COMICNAME
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+    _check(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    try:
+        eng_name, ch_name, number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name)
+    comic.file_path(pyconfig.images(SECTION), 'books')
+    comic.file_path(pyconfig.comics(SECTION), 'pdf')
+
+    # Make pdf
+    try:
+        pylib.make_pdf(comic.path['books'], comic.path['pdf'])
+    except FileNotFoundError:
+        logger.warning('Directory {} not exist'.format(comic.path['books']))
+        sys.exit(13)
+    except pycomic_err.FileExistError:
+        logger.info('PDF file {} already exist'.format(comic.path['pdf']))
+        sys.exit(14)
+    else:
+        logger.info('Make PDF {} success'.format(comic.path['pdf']))
 
 
 def verify(pyconfig):
