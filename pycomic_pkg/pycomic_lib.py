@@ -429,6 +429,40 @@ def update_menu(path, data):
         os.remove(bkp_path)
 
 
+def modify_menu(path, target, eng_name=None, ch_name=None, number=None, status=None):
+    """
+    Modify menu csv data with given value
+
+    Error:
+        Raise UpdateError if writing new file failed
+    """
+    # Make backup before update
+    bkp_path = path + '.bkp'
+    shutil.copyfile(path, bkp_path)
+
+    csv_data_new = []
+    csv_data = read_csv(path)
+    for data in csv_data:
+        if target.lower() in map(str.lower, data):
+            if eng_name:
+                data[0] = eng_name
+            if ch_name:
+                data[1] = ch_name
+            if number:
+                data[2] = number
+            if status:
+                data[3] = status
+        csv_data_new.append(data)
+
+    try:
+        write_csv(path, csv_data_new, index=False)
+    except:
+        shutil.copfile(bkp_path, path)
+        raise pycomic_err.UpdateError
+    else:
+        os.remove(bkp_path)
+
+
 def verify_images(path):
     """
     Images validation within path directory

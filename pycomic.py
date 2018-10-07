@@ -774,6 +774,8 @@ def _file_action():
         comic_file.list_url(pyconfig)
     elif sys.argv[1] == 'make-pdf':
         comic_file.make_pdf(pyconfig)
+    elif sys.argv[1] == 'state-change':
+        comic_file.state_change(pyconfig)
     elif sys.argv[1] == 'fetch-url':
         comic_file.fetch_url(pyconfig)
     elif sys.argv[1] == 'verify':

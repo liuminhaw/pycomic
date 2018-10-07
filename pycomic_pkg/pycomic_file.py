@@ -41,6 +41,7 @@ def help():
         pycomic.py list-pdf [PATTERN]
         pycomic.py list-url [PATTERN]
         pycomic.py make-pdf COMICNAME
+        pycomic.py state-change COMICNAME
         pycomic.py verify COMICNAME
     """
 
@@ -58,7 +59,7 @@ def add(pyconfig):
         english_name = sys.argv[2]
         chinese_name = sys.argv[3]
         book_number = '------'
-        process_state = '------'
+        process_state = '--------'
     except IndexError:
         print(message)
         sys.exit(1)
@@ -299,6 +300,50 @@ def make_pdf(pyconfig):
         sys.exit(14)
     else:
         logger.info('Make PDF {} success'.format(comic.path['pdf']))
+
+
+def state_change(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py state-change COMICNAME
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+    _check(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    try:
+        eng_name, ch_name, number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+    # Change comic state
+    COMPLETE = 'complete'
+    IN_PROGRESS = '--------'
+    if status == IN_PROGRESS:
+        status = COMPLETE
+    else:
+        status = IN_PROGRESS
+
+    try:
+        pylib.modify_menu(pyconfig.main_menu(SECTION), comic_name, status=status)
+    except pycomic_err.UpdateError:
+        logger.warning('Modify {} failed'.format(pyconfig.main_menu(SECTION)))
+        sys.exit(12)
+
+    # Success message
+    if status == IN_PROGRESS:
+        logger.info('{} marked as in progress'.format(comic_name))
+    else:
+        logger.info('{} marked as process complete'.format(comic_name))
 
 
 def verify(pyconfig):
