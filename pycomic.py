@@ -22,7 +22,7 @@ from pycomic_pkg import logging_class as logcl
 
 
 # Pre-defined
-VERSION = 'v1.3.0'
+VERSION = 'v1.3.1'
 HOME = str(Path.home())
 LOG_DIR = os.path.join(os.getcwd(), 'log')
 
@@ -613,9 +613,11 @@ def pycomic_fetch_url():
             current_page += 1
     except Warning:
         logger.warning('Try getting url at page {} exceed limit times'.format(current_page))
+        os.remove(comic.chapter_csv)
         sys.exit(1)
     except:
         logger.warning('Failed to write url to {} at page {}.'.format(comic.chapter_csv, current_page))
+        os.remove(comic.chapter_csv)
         sys.exit(1)
     finally:
         csv_file.close()
