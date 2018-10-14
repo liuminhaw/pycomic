@@ -8,6 +8,7 @@ Author:
 import os, sys
 import configparser,  pathlib
 import csv, re, shutil
+import datetime
 
 from PIL import Image
 
@@ -98,6 +99,8 @@ class Config():
         self.COMICS = 'Comics'
         self.USERAGENT = 'User Agent'
         self.MAIN_MENU = 'Main Menu'
+        self.ORIGINAL = 'origin'
+        self.FORMAT = 'format'
 
         # For source type - file
         self.RAW = 'raw'
@@ -155,6 +158,16 @@ class Config():
         self._read_config(config_section)
         return os.path.join(self._directory, self._menu, self._main_menu)
 
+    def origin(self, section_title):
+        config_section = self._read_section(section_title)
+        self._read_config(config_section)
+        return os.path.join(self._directory, self._images, self._original)
+
+    def format(self, section_title):
+        config_section = self._read_section(section_title)
+        self._read_config(config_section)
+        return os.path.join(self._directory, self._images, self._format)
+
     def raw(self, section_title):
         config_section = self._read_section(section_title)
         self._read_config(config_section)
@@ -178,6 +191,8 @@ class Config():
         self._comics = self._read_key(section, self.COMICS)
         self._user_agent = self._read_key(section, self.USERAGENT)
         self._main_menu = self._read_key(section, self.MAIN_MENU)
+        self._original = self._read_key(section, self.ORIGINAL)
+        self._format = self._read_key(section, self.FORMAT)
 
         self._raw = self._read_key(section, self.RAW)
         self._refine = self._read_key(section, self.REFINE)
@@ -239,6 +254,11 @@ def check_structure(config, sec_title):
     os.makedirs(config.images(sec_title), exist_ok=True)
     # Check pdf directory
     os.makedirs(config.comics(sec_title), exist_ok=True)
+
+    # Check origin directory in books directory
+    os.makedirs(config.origin(sec_title), exist_ok=True)
+    # Cehck jpeg directory in books directory
+    os.makedirs(config.format(sec_title), exist_ok=True)
 
     if not os.path.exists(config.main_menu(sec_title)):
         file = open(config.main_menu(sec_title), mode='wt', encoding='utf-8')
@@ -508,6 +528,21 @@ def make_pdf(input_dir, output_path):
         pages.append(Image.open(os.path.join(input_dir, image)))
     pages[0].save(output_path, 'PDF', resolution=100, save_all=True, append_images=pages[1:])
 
+
+def convert_images_jpg(input_dir, output_dir):
+    """
+    Convert images in input_dir to jpeg file format and save to output_dir
+
+    Error:
+        Raise IOError with truncated images
+    """
+    images = os.listdir(input_dir)
+    images.sort()
+
+    for image in images:
+        img = Image.open(os.path.join(input_dir, image))
+        file = os.path.join(output_dir, datetime.datetime.now().strftime('%Y%m%dT%H%M%SMS%f'))
+        img.convert('RGB').save(file, 'JPEG')
 
 
 if __name__ == '__main__':

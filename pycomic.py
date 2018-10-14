@@ -762,6 +762,8 @@ def _file_action():
         comic_file.help()
     elif sys.argv[1] == 'add':
         comic_file.add(pyconfig)
+    elif sys.argv[1] == 'convert':
+        comic_file.convert(pyconfig)
     elif sys.argv[1] == 'download':
         comic_file.download(pyconfig)
     elif sys.argv[1] == 'list':

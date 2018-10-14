@@ -10,11 +10,13 @@ Error Code:
     12 - UpdateError catch
     13 - FileNotFoundError catch
     14 - FileExistError catch
+    15 - IOError catch
     21 - Directory exist error
+    22 - Make pdf error
 """
 
 import sys, os
-import csv
+import csv, shutil
 
 from pycomic_pkg import exceptions as pycomic_err
 from pycomic_pkg import url_collections as url
@@ -33,11 +35,12 @@ def help():
     """
     USAGE:
         pycomic.py add ENGLISHNAME CHINESENAME
+        pycomic.py convert COMICNAME
         pycomic.py download COMICNAME
         pycomic.py fetch-url COMICNAME
         pycomic.py help
         pycomic.py list [PATTERN]
-        pycomic.py list-books [PATTERN]
+        pycomic.py list-books origin|format [PATTERN]
         pycomic.py list-pdf [PATTERN]
         pycomic.py list-url [PATTERN]
         pycomic.py make-pdf COMICNAME
@@ -103,6 +106,52 @@ def add(pyconfig):
     logger.info('Write contents to {} success'.format(comic.path['raw']))
 
 
+def convert(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py convert COMICNAME
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+    _check(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    try:
+        eng_name, ch_name, number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name)
+    comic.file_path(pyconfig.origin(SECTION), 'origin')
+    comic.file_path(pyconfig.format(SECTION), 'format')
+
+    # Convert images
+    try:
+        os.mkdir(comic.path['format'])
+    except FileExistsError:
+        logger.warning('Directory {} already exist'.format(comic.path['format']))
+        sys.exit(21)
+
+    try:
+        pylib.convert_images_jpg(comic.path['origin'], comic.path['format'])
+    except IOError:
+        logger.warning('Failed to convert {} to jpeg files'.format(comic.path['origin']))
+        shutil.rmtree(comic.path['format'])
+        sys.exit(15)
+    else:
+        logger.info('Convert {} to jpeg files success'.format(comic.path['origin']))
+
+
+
 def download(pyconfig):
     message = \
     """
@@ -128,7 +177,7 @@ def download(pyconfig):
 
     # Define comic object
     comic = pylib.Comic(eng_name, ch_name)
-    comic.file_path(pyconfig.images(SECTION), 'book')
+    comic.file_path(pyconfig.origin(SECTION), 'book')
     comic.file_path(pyconfig.refine(SECTION), 'refine')
 
     # Download images
@@ -208,10 +257,15 @@ def list_books(pyconfig):
     message = \
     """
     USAGE:
-        pycomic.py list-books [PATTERN]
+        pycomic.py list-books origin|format [PATTERN]
     """
+    _ORIGIN = 'origin'
+    _FORMAT = 'format'
+    source_type = ''
+
     try:
-        pattern = sys.argv[2]
+        source_type = sys.argv[2]
+        pattern = sys.argv[3]
     except IndexError:
         pattern = ''
 
@@ -220,7 +274,15 @@ def list_books(pyconfig):
     _check(pyconfig, SECTION)
 
     # Show all matching csv_data
-    pylib.list_files(pyconfig.images(SECTION), pattern)
+    # pylib.list_files(pyconfig.images(SECTION), pattern)
+    if source_type == _ORIGIN:
+        pylib.list_files(pyconfig.origin(SECTION), pattern)
+    elif source_type == _FORMAT:
+        pylib.list_files(pyconfig.format(SECTION), pattern)
+    else:
+        print(message)
+        sys.exit(1)
+
 
 
 def list_pdf(pyconfig):
@@ -286,7 +348,7 @@ def make_pdf(pyconfig):
 
     # Define comic object
     comic = pylib.Comic(eng_name, ch_name)
-    comic.file_path(pyconfig.images(SECTION), 'books')
+    comic.file_path(pyconfig.format(SECTION), 'books')
     comic.file_path(pyconfig.comics(SECTION), 'pdf')
 
     # Make pdf
@@ -298,6 +360,10 @@ def make_pdf(pyconfig):
     except pycomic_err.FileExistError:
         logger.info('PDF file {} already exist'.format(comic.path['pdf']))
         sys.exit(14)
+    except:
+        logger.warning('Failed to make pdf file from {}'.format(comic.path['books']))
+        os.remove(comic.path['pdf'])
+        sys.exit(22)
     else:
         logger.info('Make PDF {} success'.format(comic.path['pdf']))
 
@@ -371,7 +437,7 @@ def verify(pyconfig):
 
     # Define comic object
     comic = pylib.Comic(eng_name, ch_name)
-    comic.file_path(pyconfig.images(SECTION), 'books')
+    comic.file_path(pyconfig.origin(SECTION), 'books')
 
     # Verification
     try:
