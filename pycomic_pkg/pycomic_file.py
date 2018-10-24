@@ -89,7 +89,7 @@ def add(pyconfig):
     comic = pylib.Comic(english_name, chinese_name)
     comic.file_path(pyconfig.raw(SECTION), 'raw')
 
-    # Write data to main menu
+    # Add data to main menu
     data = [english_name, chinese_name, book_number, process_state]
     try:
         pylib.update_menu(pyconfig.main_menu(SECTION), data)

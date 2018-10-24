@@ -3,6 +3,9 @@ Class definition for pycomic program
 
 Author:
     haw
+
+Error Code:
+    103 - Menu data duplication error
 """
 
 import os, sys

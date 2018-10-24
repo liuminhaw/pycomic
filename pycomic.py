@@ -726,7 +726,7 @@ def _comic999_action():
     if len(sys.argv) == 1:
         comic999.help()
     elif sys.argv[1] == 'add':
-        comic999.add()
+        comic999.add(pyconfig)
     elif sys.argv[1] == 'download':
         comic999.download()
     elif sys.argv[1] == 'fetch-chapter':
@@ -736,7 +736,7 @@ def _comic999_action():
     elif sys.argv[1] == 'help':
         comic999.help()
     elif sys.argv[1] == 'list':
-        comic999.list()
+        comic999.list(pyconfig)
     elif sys.argv[1] == 'list-menu':
         comic999.list_menu()
     elif sys.argv[1] == 'list-pdf':
