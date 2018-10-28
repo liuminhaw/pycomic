@@ -12,8 +12,10 @@ import os, sys
 import configparser,  pathlib
 import csv, re, shutil
 import datetime
+import requests
 
 from PIL import Image
+from bs4 import BeautifulSoup
 
 from pycomic_pkg import exceptions as pycomic_err
 from pycomic_pkg import logging_class as logcl
@@ -33,42 +35,47 @@ class Comic():
     def __str__(self):
         return '{} - {}: {}'.format(self.english, self.chinese, self.number)
 
-    def def_url(self, url):
-        self.url = url + self.number + '/'
-        logger.debug('Comic URL: {}'.format(self.url))
+    # def def_url(self, url):
+    #     self.url = url + self.number + '/'
+    #     logger.debug('Comic URL: {}'.format(self.url))
+    #
+    # def def_menu(self, path):
+    #     filename = self.english + '_menu.csv'
+    #     self.menu_csv = os.path.join(path, filename)
+    #
+    # # pycomic/url
+    # def def_chapter_dir(self, path):
+    #     self.chapter_dir = os.path.join(path,self.english)
+    #
+    # def def_chapter(self, path, chapter):
+    #     filename = self.english + '_' + chapter + '.csv'
+    #     self.chapter_csv = os.path.join(path, self.english, filename)
+    #
+    # # pycomic/books
+    # def def_book_dir(self, path):
+    #     self.book_dir = os.path.join(path, self.english)
+    #
+    # def def_book(self, path, name):
+    #     self.book = os.path.join(path, self.english, name)
+    #
+    # # pycomic/pdf
+    # def def_pdf_dir(self, path):
+    #     self.pdf_dir = os.path.join(path, self.english)
+    #
+    # def def_pdf(self, path, name):
+    #     filename = name + '.pdf'
+    #     self.pdf = os.path.join(path, self.english, filename)
 
-    def def_menu(self, path):
-        filename = self.english + '_menu.csv'
-        self.menu_csv = os.path.join(path, filename)
-
-    # pycomic/url
-    def def_chapter_dir(self, path):
-        self.chapter_dir = os.path.join(path,self.english)
-
-    def def_chapter(self, path, chapter):
-        filename = self.english + '_' + chapter + '.csv'
-        self.chapter_csv = os.path.join(path, self.english, filename)
-
-    # pycomic/books
-    def def_book_dir(self, path):
-        self.book_dir = os.path.join(path, self.english)
-
-    def def_book(self, path, name):
-        self.book = os.path.join(path, self.english, name)
-
-    # pycomic/pdf
-    def def_pdf_dir(self, path):
-        self.pdf_dir = os.path.join(path, self.english)
-
-    def def_pdf(self, path, name):
-        filename = name + '.pdf'
-        self.pdf = os.path.join(path, self.english, filename)
-
-    def file_path(self, path, key, name=None):
+    def file_path(self, path, key, name=None, extension=''):
         if name:
+            name += extension
             self.path[key] = os.path.join(path, self.english, name)
         else:
-            self.path[key] = os.path.join(path, self.english)
+            name = self.english + extension
+            self.path[key] = os.path.join(path, name)
+
+    def comic_site(self, url, key):
+        self.path[key] = url + self.number + '/'
 
 
 
@@ -95,6 +102,8 @@ class Config():
         self.SOURCE = 'source'
 
         self.DEFAULT_DIR = 'pycomic'
+        self.HOME_URL = 'Home-url'
+        self.SITE_URL = 'Site-url'
         self.DIRECTORY = 'Directory'
         self.MENU = 'Menu'
         self.LINKS = 'Links'
@@ -130,6 +139,16 @@ class Config():
             return user_agent
         else:
             return self._read_key(config_section, self.USERAGENT)
+
+    def home_url(self, section_title):
+        config_section = self._read_section(section_title)
+        self._read_config(config_section)
+        return self._home_url
+
+    def site_url(self, section_title):
+        config_section = self._read_section(section_title)
+        self._read_config(config_section)
+        return self._site_url
 
     def directory(self, section_title):
         config_section = self._read_section(section_title)
@@ -187,6 +206,8 @@ class Config():
 
 
     def _read_config(self, section):
+        self._site_url = self._read_key(section, self.SITE_URL)
+        self._home_url = self._read_key(section, self.HOME_URL)
         self._directory = self._read_key(section, self.DIRECTORY)
         self._menu = self._read_key(section, self.MENU)
         self._links = self._read_key(section, self.LINKS)
@@ -311,13 +332,18 @@ def write_csv(path, data, index=True):
 
     Parameters:
         data - Iterable
+    Error:
+        CSVError - Failed to write csv
     """
-    with open(path, mode='wt', encoding='utf-8') as file:
-        csv_writer = csv.writer(file)
-        if index:
-            [csv_writer.writerow((index, item)) for index, item in enumerate(data)]
-        else:
-            [csv_writer.writerow(item) for item in data]
+    try:
+        with open(path, mode='wt', encoding='utf-8') as file:
+            csv_writer = csv.writer(file)
+            if index:
+                [csv_writer.writerow(index, item) for index, item in enumerate(data)]
+            else:
+                [csv_writer.writerow(item) for item in data]
+    except Exception as err:
+        raise pycomic_err.CSVError(err)
 
 
 def append_csv(path, data):
@@ -326,10 +352,15 @@ def append_csv(path, data):
 
     Parameters:
         data - Iterable
+    Error:
+    CSVError - Failed to append csv
     """
-    with open(path, mode='at', encoding='utf-8') as file:
-        csv_writer = csv.writer(file)
-        csv_writer.writerow(data)
+    try:
+        with open(path, mode='at', encoding='utf-8') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(data)
+    except Exception as err:
+        raise pycomic_err.CSVError(err)
 
 
 def read_csv(path):
@@ -338,13 +369,18 @@ def read_csv(path):
 
     Return:
         List of read data
+    Error:
+        CSVError - Failed to read csv
     """
     contents = []
 
-    with open(path, mode='rt', encoding='utf-8') as file:
-        csv_reader = csv.reader(file)
-        for data in csv_reader:
-            contents.append(data)
+    try:
+        with open(path, mode='rt', encoding='utf-8') as file:
+            csv_reader = csv.reader(file)
+            for data in csv_reader:
+                contents.append(data)
+    except Exception as err:
+        raise pycomic_err.CSVError(err)
 
     return contents
 
@@ -546,6 +582,23 @@ def convert_images_jpg(input_dir, output_dir):
         img = Image.open(os.path.join(input_dir, image))
         file = os.path.join(output_dir, datetime.datetime.now().strftime('%Y%m%dT%H%M%SMS%f'))
         img.convert('RGB').save(file, 'JPEG')
+
+
+def request_page(page_url):
+    """
+    Request and parse page_url
+
+    Return:
+        BeautifulSoup parsed object
+    Error:
+        requests.exceptions.HTTPError - Request failed
+    """
+    page_req = requests.get(page_url)
+    page_req.raise_for_status()
+    page_req.encoding = 'utf-8'
+
+    return BeautifulSoup(page_req.text, 'html.parser')
+
 
 
 if __name__ == '__main__':

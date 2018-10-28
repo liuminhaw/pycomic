@@ -32,3 +32,10 @@ class FileExistError(pycomicError):
     Raise when file already exist
     """
     pass
+
+
+class CSVError(pycomicError):
+    """
+    Raise when failed to make action on csv file
+    """
+    pass
