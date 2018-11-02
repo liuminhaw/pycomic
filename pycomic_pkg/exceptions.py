@@ -39,3 +39,9 @@ class CSVError(pycomicError):
     Raise when failed to make action on csv file
     """
     pass
+
+
+class TXTError(pycomicError):
+    """
+    Raise when failed to make action on txt file
+    """

@@ -339,7 +339,7 @@ def write_csv(path, data, index=True):
         with open(path, mode='wt', encoding='utf-8') as file:
             csv_writer = csv.writer(file)
             if index:
-                [csv_writer.writerow(index, item) for index, item in enumerate(data)]
+                [csv_writer.writerow((index, item)) for index, item in enumerate(data)]
             else:
                 [csv_writer.writerow(item) for item in data]
     except Exception as err:
@@ -390,10 +390,15 @@ def write_txt(path, data):
     Write data to text file
 
     Parameters:
-        data - iterable
+        data - Iterable
+    Error:
+        TXTError - Failed to write txt file
     """
-    with open(path, mode='wt', encoding='utf-8') as file:
-        file.writelines('{}\n'.format(content) for content in data)
+    try:
+        with open(path, mode='wt', encoding='utf-8') as file:
+            file.writelines('{}\n'.format(content) for content in data)
+    except Exception as err:
+        raise pycomic_err.TXTError(err)
 
 
 def append_txt(path, data):
@@ -402,9 +407,14 @@ def append_txt(path, data):
 
     Parameter:
         data - iterable
+    Error:
+        TXTError - Failed to append to txt file
     """
-    with open(path, mode='at', encoding='utf-8') as file:
-        file.writelines('{}\n'.format(content) for content in data)
+    try:
+        with open(path, mode='at', encoding='utf-8') as file:
+            file.writelines('{}\n'.format(content) for content in data)
+    except Exception as err:
+        raise pycomic_err.TXTError(err)
 
 
 def list_menu_csv(config, sec_title, pattern):
@@ -444,6 +454,34 @@ def list_files(directory, pattern):
     for index, file in enumerate(files):
         if re_pattern.search(file):
             print('FILE TAG {:4d} : {:>20}'.format(index, file))
+    print('------- END -------')
+
+
+def list_file_content(path, pattern):
+    """
+    List each line of file's content that match the pattern
+
+    Parameter:
+        path - Path of file to be read
+    Error:
+        CSVError - read_csv function failed
+    """
+    re_pattern = re.compile(r'.*{}.*'.format(pattern))
+    last_update, comic_state = '', ''
+
+    # Read file
+    file_contents = read_csv(path)
+
+    # Search for matching result
+    print('------ START ------')
+    for index, content in enumerate(file_contents):
+        if re_pattern.search(content[1]) != None:
+            last_update, comic_state = content[2], content[3]
+            print('Identity Number {:4d} : {}'.format(index, content[0]))
+
+    print('------ INFO -------')
+    print('Last Update: {}'.format(last_update))
+    print('Comic State: {}'.format(comic_state))
     print('------- END -------')
 
 

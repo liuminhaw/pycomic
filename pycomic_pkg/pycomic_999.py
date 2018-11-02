@@ -37,6 +37,7 @@ def help():
         pycomic.py fetch-menu COMICNAME
         pycomic.py help
         pycomic.py list [PATTERN]
+        pycomic.py list-menu [PATTERN]
     """
 
     print(message)
@@ -123,10 +124,10 @@ def fetch_menu(pyconfig):
 
     # Construct data
     data = []
-    for index, chapter in enumerate(chapter_list):
+    for chapter in chapter_list:
         chapter_url = pyconfig.home_url(SECTION) + chapter.get('href')
         chapter_title = chapter.find('span').text
-        data.append((index, chapter_title, chapter_url, date, comic_state))
+        data.append((chapter_title, chapter_url, date, comic_state))
 
     # Write csv file
     try:
@@ -155,3 +156,42 @@ def list(pyconfig):
 
     # Show matching data
     pylib.list_menu_csv(pyconfig, SECTION, pattern)
+
+
+def list_menu(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py list-menu COMICNAME [PATTERN]
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    try:
+        pattern = sys.argv[3]
+    except IndexError:
+        pattern = ''
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    try:
+        eng_name, ch_name, number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name, number)
+    comic.file_path(pyconfig.menu(SECTION), 'menu', extension='_menu.csv')
+
+    # Show menu content
+    try:
+        pylib.list_file_content(comic.path['menu'], pattern)
+    except pycomic_err.CSVError:
+        print('File {} not exist'.format(comic.path['menu']))
+        print('Use fetch-menu function to create menu file')

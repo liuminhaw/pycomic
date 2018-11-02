@@ -11,6 +11,8 @@ Error Code:
     13 - FileNotFoundError catch
     14 - FileExistError catch
     15 - IOError catch
+    16 - CSVError catch
+    17 - TXTError catch
     21 - Directory exist error
     22 - Make pdf error
 """
@@ -100,10 +102,14 @@ def add(pyconfig):
     logger.info('Write {} to menu csv file success'.format(data))
 
     # Write raw data file
-    pylib.write_txt(comic.path['raw'], contents)
-
-    # Success message
-    logger.info('Write contents to {} success'.format(comic.path['raw']))
+    try:
+        pylib.write_txt(comic.path['raw'], contents)
+    except pycomic_err.TXTError as err:
+        logger.warning('Error: {}'.format(err))
+        logger.info('Failed to write to {}'.format(comic.path['raw']))
+        sys.exit(17)
+    else:
+        logger.info('Write contents to {} success'.format(comic.path['raw']))
 
 
 def convert(pyconfig):
@@ -227,10 +233,14 @@ def fetch_url(pyconfig):
     urls = url.extract_images(comic.path['raw'])
 
     # Save links to extract file
-    pylib.write_csv(comic.path['refine'], urls)
-
-    # Success message
-    logger.info('Extract file {} success'.format(eng_name))
+    try:
+        pylib.write_csv(comic.path['refine'], urls)
+    except pycomic_err.CSVError as err:
+        logger.warning('Error: {}'.format(err))
+        logger.info('Failed to write to {}'.format(comic.path['refine']))
+        sys.exit(16)
+    else:
+        logger.info('Extract file {} success'.format(eng_name))
 
 
 

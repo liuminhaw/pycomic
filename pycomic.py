@@ -738,7 +738,7 @@ def _comic999_action():
     elif sys.argv[1] == 'list':
         comic999.list(pyconfig)
     elif sys.argv[1] == 'list-menu':
-        comic999.list_menu()
+        comic999.list_menu(pyconfig)
     elif sys.argv[1] == 'list-pdf':
         comic999.list_pdf()
     elif sys.argv[1] == 'list-chapters':
