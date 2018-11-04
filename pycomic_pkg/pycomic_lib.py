@@ -11,11 +11,12 @@ Error Code:
 import os, sys
 import configparser,  pathlib
 import csv, re, shutil
-import datetime
+import datetime, time
 import requests
 
 from PIL import Image
 from bs4 import BeautifulSoup
+from selenium import webdriver
 
 from pycomic_pkg import exceptions as pycomic_err
 from pycomic_pkg import logging_class as logcl
@@ -31,6 +32,10 @@ class Comic():
         self.chinese = chinese
         self.number = number
         self.path = dict()
+
+        self.chapter_title = ''
+        self.url = ''
+        self.total_pages = 0
 
     def __str__(self):
         return '{} - {}: {}'.format(self.english, self.chinese, self.number)
@@ -77,6 +82,86 @@ class Comic():
     def comic_site(self, url, key):
         self.path[key] = url + self.number + '/'
 
+
+
+class Driver():
+
+    class DriverError(Exception):
+        """
+        Raise when selenium problem occurs
+        """
+        pass
+
+    def __init__(self, title, url):
+        self.driver = webdriver.Firefox()
+
+        self.chapter_title = title
+        self.chapter_url = url
+        self.total_pages = 0
+
+    def get(self):
+        self.driver.get(self.chapter_url)
+
+    def find_last_page(self, last_page_selector):
+        """
+        Find last page value
+
+        Error:
+            DriverError - Failed to get last page value
+        """
+        regex = re.compile(r'\d{1,3}')
+        element = self.driver.find_element_by_css_selector(last_page_selector)
+
+        try:
+            self.total_pages = int(regex.search(element.text).group())
+        except Exception as err:
+            raise self.DriverError(err)
+
+    def get_urls(self, image_id, next_page_selector):
+        """
+        All image urls
+        """
+        self.urls = []
+
+        for counter in range(self.total_pages):
+            for _ in range(5):
+                try:
+                    url = self._comic_image_url(image_id)
+                    print('Page {} url {}'.format(counter, url))
+                except self.DriverError:
+                    continue
+                else:
+                    next_page = self.driver.find_element_by_id(next_page_selector)
+                    next_page.click()
+                    break
+            else:
+                url = 'URL error occurs'
+
+            self.urls.append(url)
+
+        self.driver.close()
+
+
+    def _comic_image_url(self, image_id):
+        source, tag = 'src', 'img'
+
+        try:
+            element = self.driver.find_element_by_id(image_id)
+            webpage = element.get_attribute(source)
+            self.driver.execute_script("window.open('{page}');".format(page=webpage))
+            time.sleep(1.2)
+            self.driver.switch_to.window(self.driver.window_handles[1])
+            image_tag = self.driver.find_element_by_tag_name(tag)
+            image_url = image_tag.get_attribute(source)
+        except Exception as err:
+            raise self.DriverError(err)
+        finally:
+            for handle in self.driver.window_handles[1:]:
+                self.driver.switch_to.window(handle)
+                self.driver.close()
+            self.driver.switch_to.window(self.driver.window_handles[0])
+
+        return image_url
 
 
 
@@ -314,18 +399,6 @@ def check_menu_duplicate(config, sec_title, ch_name, eng_name, number=None):
                 sys.exit(103)
 
 
-# def write_menu_csv(config, sec_title, data):
-#     """
-#     Write new data to menu csv file
-#
-#     Parameters:
-#         data - tuple
-#     """
-#     with open(config.main_menu(sec_title), mode='at', encoding='utf-8') as file:
-#         csv_writer = csv.writer(file)
-#         csv_writer.writerow(data)
-
-
 def write_csv(path, data, index=True):
     """
     Write data to csv file
@@ -415,6 +488,25 @@ def append_txt(path, data):
             file.writelines('{}\n'.format(content) for content in data)
     except Exception as err:
         raise pycomic_err.TXTError(err)
+
+
+def csv_datarow(path, row_index):
+    """
+    Return the index-th row of a csv file
+
+    Return:
+        List of found row
+    Error:
+        CSVError - read_csv function failed
+        CSVContentError - Failed to find matching content
+    """
+    file_contents = read_csv(path)
+
+    for index, data in enumerate(file_contents):
+        if row_index == index:
+            return data
+
+    raise pycomic_err.CSVContentError
 
 
 def list_menu_csv(config, sec_title, pattern):
@@ -636,6 +728,7 @@ def request_page(page_url):
     page_req.encoding = 'utf-8'
 
     return BeautifulSoup(page_req.text, 'html.parser')
+
 
 
 

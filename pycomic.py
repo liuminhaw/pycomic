@@ -732,7 +732,7 @@ def _comic999_action():
     elif sys.argv[1] == 'fetch-menu':
         comic999.fetch_menu(pyconfig)
     elif sys.argv[1] == 'fetch-url':
-        comic999.fetch_url()
+        comic999.fetch_url(pyconfig)
     elif sys.argv[1] == 'help':
         comic999.help()
     elif sys.argv[1] == 'list':

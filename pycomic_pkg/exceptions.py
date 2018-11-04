@@ -41,7 +41,22 @@ class CSVError(pycomicError):
     pass
 
 
+class CSVContentError(pycomicError):
+    """
+    Raise when failed to find matching data within csv file
+    """
+    pass
+
+
 class TXTError(pycomicError):
     """
     Raise when failed to make action on txt file
     """
+    pass
+
+
+# class DriverError(pycomicError):
+#     """
+#     Raise when exception happened on selenium driver
+#     """
+#     pass
