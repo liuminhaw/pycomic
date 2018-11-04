@@ -22,7 +22,7 @@ from pycomic_pkg import logging_class as logcl
 
 
 # Pre-defined
-VERSION = 'v1.3.1'
+VERSION = 'v1.3.2'
 HOME = str(Path.home())
 LOG_DIR = os.path.join(os.getcwd(), 'log')
 
