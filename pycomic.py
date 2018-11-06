@@ -28,6 +28,9 @@ from pycomic_pkg import logging_class as logcl
 HOME = str(Path.home())
 LOG_DIR = os.path.join(os.getcwd(), 'log')
 
+SOURCE_999 = '999comics'
+SOURCE_FILE = 'file'
+
 COMIC_999_URL_HOME = 'https://www.999comics.com'
 COMIC_999_URL = 'https://www.999comics.com/comic/'
 
@@ -43,42 +46,13 @@ def main():
     # Source type
     source_type = pyconfig.source()
 
-    # Apply different method according to source type
-    if source_type.lower() == '999comics':
+    # Source type methods
+    if source_type.lower() == SOURCE_999:
         _comic999_action()
-    elif source_type.lower() == 'file':
+    elif source_type.lower() == SOURCE_FILE:
         _file_action()
     else:
-        pass
-
-    # if len(sys.argv) == 1:
-    #     pycomic_help()
-    # elif sys.argv[1] == 'add':
-    #     pycomic_add()
-    # elif sys.argv[1] == 'download':
-    #     pycomic_download()
-    # elif sys.argv[1] == 'fetch-chapter':
-    #     pycomic_fetch_chapter()
-    # elif sys.argv[1] == 'fetch-url':
-    #     pycomic_fetch_url()
-    # elif sys.argv[1] == 'help':
-    #     pycomic_help()
-    # elif sys.argv[1] == 'list':
-    #     pycomic_list()
-    # elif sys.argv[1] == 'list-menu':
-    #     pycomic_list_menu()
-    # elif sys.argv[1] == 'list-pdf':
-    #     pycomic_list_pdf()
-    # elif sys.argv[1] == 'list-chapters':
-    #     pycomic_list_chapters()
-    # elif sys.argv[1] == 'list-url':
-    #     pycomic_list_url()
-    # elif sys.argv[1] == 'make-pdf':
-    #     pycomic_make_pdf()
-    # elif sys.argv[1] == 'verify':
-    #     pycomic_verify()
-    # else:
-    #     pycomic_help()
+        print('Source type {} not supported'.format(source))
 
 
 def pycomic_help():
@@ -744,9 +718,11 @@ def _comic999_action():
     elif sys.argv[1] == 'list-chapters':
         comic999.list_chapters()
     elif sys.argv[1] == 'list-url':
-        comic999.list_url()
+        comic999.list_url(pyconfig)
     elif sys.argv[1] == 'make-pdf':
         comic999.make_pdf()
+    elif sys.argv[1] == 'source':
+        comic999.source(pyconfig)
     elif sys.argv[1] == 'verify':
         comic999.verify()
     else:
@@ -776,6 +752,8 @@ def _file_action():
         comic_file.list_url(pyconfig)
     elif sys.argv[1] == 'make-pdf':
         comic_file.make_pdf(pyconfig)
+    elif sys.argv[1] == 'source':
+        comic_file.source(pyconfig)
     elif sys.argv[1] == 'state-change':
         comic_file.state_change(pyconfig)
     elif sys.argv[1] == 'fetch-url':
@@ -785,6 +763,15 @@ def _file_action():
     else:
         comic_file.help()
 
+
+def _get_source(source):
+    """
+    Show current source
+    """
+    if source == SOURCE_999 or source == SOURCE_FILE:
+        print('{}'.format(source))
+    else:
+        print('Source type {} not supported'.format(source))
 
 
 def _check(config):

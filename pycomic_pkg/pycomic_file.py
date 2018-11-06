@@ -46,6 +46,7 @@ def help():
         pycomic.py list-pdf [PATTERN]
         pycomic.py list-url [PATTERN]
         pycomic.py make-pdf COMICNAME
+        pycomic.py source [file|999comics]
         pycomic.py state-change COMICNAME
         pycomic.py verify COMICNAME
     """
@@ -194,6 +195,7 @@ def download(pyconfig):
         sys.exit(21)
     urls = url.extract_images(comic.path['refine'])
     errors = url.download_images(urls, comic.path['book'], header=pyconfig.useragent(SECTION))
+    # errors = url.download_images(urls, comic.path['book'], header='Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0')
 
     # Show download error messages
     for error_message in errors:
@@ -377,6 +379,21 @@ def make_pdf(pyconfig):
     else:
         logger.info('Make PDF {} success'.format(comic.path['pdf']))
 
+
+def source(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py source [file|999comics]
+    """
+    if len(sys.argv) == 2:
+        pylib.get_source(pyconfig)
+    elif sys.argv[2] == 'file' or sys.argv[2] == '999comics':
+        pylib.set_source(pyconfig, sys.argv[2])
+    else:
+        print(message)
+        sys.exit(1)
+        
 
 def state_change(pyconfig):
     message = \

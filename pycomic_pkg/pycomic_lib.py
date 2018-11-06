@@ -131,13 +131,16 @@ class Driver():
                 except self.DriverError:
                     continue
                 else:
-                    next_page = self.driver.find_element_by_id(next_page_selector)
-                    next_page.click()
+                    # next_page = self.driver.find_element_by_id(next_page_selector)
+                    # next_page.click()
                     break
             else:
                 url = 'URL error occurs'
+                print('Page {} {}'.format(counter, url))
 
             self.urls.append(url)
+            next_page = self.driver.find_element_by_id(next_page_selector)
+            next_page.click()
 
         self.driver.close()
 
@@ -285,9 +288,14 @@ class Config():
         self._read_config(config_section)
         return os.path.join(self._directory, self._links, self._refine)
 
-    def source(self):
+    def source(self, source=None):
         type_section = self._read_section(self.TYPE_SEC)
-        return self._read_key(type_section, self.SOURCE)
+
+        if source:
+            type_section[self.SOURCE] = source
+            self._write_file()
+        else:
+            return self._read_key(type_section, self.SOURCE)
 
 
     def _read_config(self, section):
@@ -538,6 +546,8 @@ def list_files(directory, pattern):
     """
     # Get files in directory
     re_pattern = re.compile(r'.*{}.*'.format(pattern), re.IGNORECASE)
+
+    os.makedirs(directory, exist_ok=True)
     files = os.listdir(directory)
     files.sort()
 
@@ -730,6 +740,18 @@ def request_page(page_url):
     return BeautifulSoup(page_req.text, 'html.parser')
 
 
+def get_source(config):
+    """
+    Get config file source value
+    """
+    print(config.source())
+
+
+def set_source(config, source_type):
+    """
+    Change config file source
+    """
+    config.source(source_type)
 
 
 if __name__ == '__main__':

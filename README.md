@@ -1,9 +1,9 @@
 # pycomic
 #### Program to download and save comic to local disk
-Fetching comic from **999comic** website
+Fetching comic from multiple sources
 
 #### Additional Requirement
-`geckodriver` need to be installed before program can be run
+selenium `driver` need to be installed before program can be run
 
 #### Setup
 Run `setup.sh` script to setup program for use  
@@ -15,45 +15,43 @@ Run `setup.sh` script to setup program for use
 `.pycomic.ini` config file will be create in user's home directory  
 Modify `.pycomic.ini` for custom configuration
 
-### Version 1.2.1
-- logging class update (Customize logging destination)
-- pycomic localize
-- Update setup script
+### In Development
+- New program structure
+- Multiple sources type
 
-##### Methods
+##### Type File
 - add
+- convert
 - download
-- fetch-chapter
 - fetch-url
 - help
 - list
-- list-chapters
+- list-books
 - list-pdf
-- list-menu
+- list-url
 - make-pdf
+- state-change
 - verify
 
 ##### add
-Store comic information to local.
+Store comic title information to local.
 
-    pycomic.py add ENGLISHNAME CHINESENAME NUMBER
+    pycomic.py add ENGLISHNAME CHINESENAME
+
+##### convert
+Convert image files into `jpeg` format
+
+    pycomic.py convert COMICNAME
 
 ##### download
 Download comic
-Use `pycomic list-url` command to get `FILETAG`
 
-    pycomic.py download COMICNAME FILETAG
-
-##### fetch-chapter
-Store chapter link of comic to local
-
-    pycomic.py fetch-chapter COMICNAME
+    pycomic.py download COMICNAME
 
 ##### fetch-url
 Store each image link of comic to local  
-Use `pycomic list-menu` to find `IDENTITYNUM`
 
-    pycomic.py fetch-url COMICNAME IDENTITYNUM
+    pycomic.py fetch-url COMICNAME
 
 ##### help
 Show available command options
@@ -61,36 +59,48 @@ Show available command options
     pycomic.py help
 
 ##### list
-List stored comics  
+List stored comic title information
 Optional `PATTERN` search for matching
 
     pycomic.py list [PATTERN]
 
-##### list-chapters
-List chapters that are stored in local  
-Show matching pattern if `PATTERN` is provided
+##### list-books
+List books that are stored in local  
+Show matching pattern if `PATTERN` is provided  
+`origin` option for unconverted images  
+`format` option for converted images
 
-    pycomic.py list-chapter COMICNAME [PATTERN]
-
-##### list-menu
-List comic's chapter menu  
-Show matching pattern if `PATTERN` is provided
-
-    pycomic.py list-menu COMICNAME [PATTERN]
+    pycomic.py list-books origin|format [PATTERN]
 
 ##### list-pdf
 List pdf files of comic that is stored  
 Show matching pattern if `PATTERN` is provided
 
-    pycomic.py list-pdf COMICNAME [PATTERN]
+    pycomic.py list-pdf [PATTERN]
+
+##### list-url
+List extracted url files
+Show matching pattern if `PATTERN` is provided
+
+    pycomic.py list-url [PATTERN]
 
 ##### make-pdf
 Use downloaded comic images to make pdf file  
-Use `pycomic list-chapters` to find `DIRECTORYTAG`
 
-    pycomic.py make-pdf COMICNAME DIRECTORYTAG
+    pycomic.py make-pdf COMICNAME
+
+##### source
+Change or reference source type information  
+Reference mode if no `SOURCE_TYPE` given
+
+    pycomic.py source [SOURCE_TYPE]
+
+##### state-change
+Change comic progress state
+
+    pycomic.py state-change COMICNAME
 
 ##### verify
-Verify download images's integrity
+Verify download images' integrity
 
-    pycomic.py verify COMICNAME DIRECTORYTAG
+    pycomic.py verify COMICNAME
