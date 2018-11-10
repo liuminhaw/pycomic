@@ -288,9 +288,11 @@ def list_books(pyconfig):
     # Show all matching csv_data
     # pylib.list_files(pyconfig.images(SECTION), pattern)
     if source_type == _ORIGIN:
-        pylib.list_files(pyconfig.origin(SECTION), pattern)
+        _print_files(pylib.list_files(pyconfig.origin(SECTION), pattern))
+        # pylib.list_files(pyconfig.origin(SECTION), pattern)
     elif source_type == _FORMAT:
-        pylib.list_files(pyconfig.format(SECTION), pattern)
+        _print_files(pylib.list_files(pyconfig.format(SECTION), pattern))
+        # pylib.list_files(pyconfig.format(SECTION), pattern)
     else:
         print(message)
         sys.exit(1)
@@ -313,7 +315,8 @@ def list_pdf(pyconfig):
     _check(pyconfig, SECTION)
 
     # Show all matching data
-    pylib.list_files(pyconfig.comics(SECTION), pattern)
+    _print_files(pylib.list_files(pyconfig.comics(SECTION), pattern))
+    # pylib.list_files(pyconfig.comics(SECTION), pattern)
 
 
 def list_url(pyconfig):
@@ -332,7 +335,8 @@ def list_url(pyconfig):
     _check(pyconfig, SECTION)
 
     # Show all matching data
-    pylib.list_files(pyconfig.refine(SECTION), pattern)
+    _print_files(pylib.list_files(pyconfig.refine(SECTION), pattern))
+    # pylib.list_files(pyconfig.refine(SECTION), pattern)
 
 
 def make_pdf(pyconfig):
@@ -393,7 +397,7 @@ def source(pyconfig):
     else:
         print(message)
         sys.exit(1)
-        
+
 
 def state_change(pyconfig):
     message = \
@@ -487,3 +491,13 @@ def _check(config, sec_title):
     os.makedirs(config.raw(sec_title), exist_ok=True)
     # Check url/refind directory
     os.makedirs(config.refine(sec_title), exist_ok=True)
+
+
+def _print_files(files):
+    """
+    Output files information to terminal
+    """
+    print('------ START ------')
+    for index, file in files:
+        print('FILE TAG {:4d} : {:>20}'.format(index, file))
+    print('------- END -------')

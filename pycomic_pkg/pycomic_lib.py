@@ -34,8 +34,8 @@ class Comic():
         self.path = dict()
 
         self.chapter_title = ''
-        self.url = ''
-        self.total_pages = 0
+        # self.url = ''
+        # self.total_pages = 0
 
     def __str__(self):
         return '{} - {}: {}'.format(self.english, self.chinese, self.number)
@@ -498,23 +498,31 @@ def append_txt(path, data):
         raise pycomic_err.TXTError(err)
 
 
-def csv_datarow(path, row_index):
+def index_data(path, target_index, file=True):
     """
-    Return the index-th row of a csv file
+    file is True:
+        Return the index-th row of a csv file
+    file is False:
+        Return the index-th file in a directory
 
     Return:
         List of found row
     Error:
         CSVError - read_csv function failed
-        CSVContentError - Failed to find matching content
+        DataIndexError - Failed to find matching index
     """
-    file_contents = read_csv(path)
+    if file:
+        contents = read_csv(path)
+        for index, data in enumerate(contents):
+            if target_index == index:
+                return data
+    else:
+        contents = list_files(path, '')
+        for index, data in contents:
+            if target_index == index:
+                return data
 
-    for index, data in enumerate(file_contents):
-        if row_index == index:
-            return data
-
-    raise pycomic_err.CSVContentError
+    raise pycomic_err.DataIndexError
 
 
 def list_menu_csv(config, sec_title, pattern):
@@ -542,49 +550,70 @@ def list_menu_csv(config, sec_title, pattern):
 
 def list_files(directory, pattern):
     """
-    List files in directory that matches the pattern
+    Obtain files in directory that matches the pattern
+
+    Return:
+        Sorted list of files in directory
     """
     # Get files in directory
     re_pattern = re.compile(r'.*{}.*'.format(pattern), re.IGNORECASE)
+    matched_files = []
 
     os.makedirs(directory, exist_ok=True)
     files = os.listdir(directory)
     files.sort()
 
-    # Search for matching result
-    print('------ START ------')
+    # Find and return matching files
     for index, file in enumerate(files):
         if re_pattern.search(file):
-            print('FILE TAG {:4d} : {:>20}'.format(index, file))
-    print('------- END -------')
+            matched_files.append((index, file))
+
+    return matched_files
+
+    # Search for matching result
+    # print('------ START ------')
+    # for index, file in enumerate(files):
+    #     if re_pattern.search(file):
+    #         print('FILE TAG {:4d} : {:>20}'.format(index, file))
+    # print('------- END -------')
 
 
-def list_file_content(path, pattern):
+def list_file_content(path, pattern, target_index=1):
     """
     List each line of file's content that match the pattern
 
     Parameter:
-        path - Path of file to be read
+        path - File to be read
+    Return:
+        List of matching data
     Error:
         CSVError - read_csv function failed
     """
     re_pattern = re.compile(r'.*{}.*'.format(pattern))
+    matched_contents = []
     last_update, comic_state = '', ''
 
     # Read file
     file_contents = read_csv(path)
 
-    # Search for matching result
-    print('------ START ------')
+    # Find and return matching contents
     for index, content in enumerate(file_contents):
-        if re_pattern.search(content[1]) != None:
-            last_update, comic_state = content[2], content[3]
-            print('Identity Number {:4d} : {}'.format(index, content[0]))
+        if re_pattern.search(content[target_index]) != None:
+            matched_contents.append((index, content))
 
-    print('------ INFO -------')
-    print('Last Update: {}'.format(last_update))
-    print('Comic State: {}'.format(comic_state))
-    print('------- END -------')
+    return matched_contents
+
+    # Search for matching result
+    # print('------ START ------')
+    # for index, content in enumerate(file_contents):
+    #     if re_pattern.search(content[1]) != None:
+    #         last_update, comic_state = content[2], content[3]
+    #         print('Identity Number {:4d} : {}'.format(index, content[0]))
+    #
+    # print('------ INFO -------')
+    # print('Last Update: {}'.format(last_update))
+    # print('Comic State: {}'.format(comic_state))
+    # print('------- END -------')
 
 
 

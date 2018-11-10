@@ -703,6 +703,8 @@ def _comic999_action():
         comic999.add(pyconfig)
     elif sys.argv[1] == 'download':
         comic999.download()
+    elif sys.argv[1] == 'error-url':
+        comic999.error_url(pyconfig)
     elif sys.argv[1] == 'fetch-menu':
         comic999.fetch_menu(pyconfig)
     elif sys.argv[1] == 'fetch-url':

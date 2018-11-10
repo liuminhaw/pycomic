@@ -11,7 +11,7 @@ Error Code:
     12 - UpdateError catch
     13 - FileNotFoundError catch
     16 - CSVError catch
-    18 - CSVContentError catch
+    18 - DataIndexEror catch
     31 - HTTPError catch
     32 - DriverError catch
 """
@@ -39,6 +39,7 @@ def help():
     """
     USAGE:
         pycomic.py add ENGLISHNAME CHINESENAME NUMBER
+        pycomic.py error-url COMICNAME IDENTITYNUM
         pycomic.py fetch-menu COMICNAME
         pycomic.py fetch-url COMICNAME IDENTITYNUM
         pycomic.py help
@@ -82,6 +83,45 @@ def add(pyconfig):
         sys.exit(12)
     else:
         logger.info('Write {} to menu csv file success'.format(data))
+
+
+def error_url(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py error_url COMICNAME FILETAG
+    NOTE:
+        Use 'pycomic.py list-url' command to get FILETAG
+    """
+    try:
+        comic_name = sys.argv[2]
+        request_tag = int(sys.argv[3])
+    except (IndexError, ValueError):
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    eng_name, ch_name, number, status = _check_comic_existence(pyconfig, comic_name)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name, number)
+    comic.file_path(pyconfig.links(SECTION), 'links-dir')
+    # print(pylib.index_data(comic.path['links-dir'], request_tag, file=False))
+    try:
+        comic.file_path(pyconfig.links(SECTION), 'links', name=pylib.index_data(comic.path['links-dir'], request_tag, file=False))
+    except pycomic_err.DataIndexError:
+        logger.info('File Tag {} not found'.format(request_tag))
+        sys.exit(18)
+
+    # Show errors
+    errors = pylib.list_file_content(comic.path['links'], 'error')
+    print('File {}'.format(comic.path['links']))
+    for index, error in errors:
+        print('Page {} error - {}'.format(index, error[1]))
+
 
 
 def fetch_menu(pyconfig):
@@ -170,12 +210,12 @@ def fetch_url(pyconfig):
     comic.file_path(pyconfig.menu(SECTION), 'menu', extension='_menu.csv')
     # Read comic URL from COMICNAME_menu.csv file
     try:
-        comic_data = pylib.csv_datarow(comic.path['menu'], request_identity)
+        comic_data = pylib.index_data(comic.path['menu'], request_identity)
     except pycomic_err.CSVError as err:
         logger.warning(err)
         logger.info('Failed to read file {}'.format(comic.path['menu']))
         sys.exit(16)
-    except pycomic_err.CSVContentError:
+    except pycomic_err.DataIndexError:
         logger.info('Identity Number {} not found'.format(request_identity))
         sys.exit(18)
 
@@ -211,6 +251,8 @@ def fetch_url(pyconfig):
     except pycomic_err.CSVError as err:
         logger.warning('Error" {}'.format(err))
         logger.info('Failed to write to {}'.format(comic.path['links']))
+
+        os.remove(comic.path['links'])
         sys.exit(16)
     else:
         logger.info('Write file {} success'.format(comic.path['links']))
@@ -263,7 +305,8 @@ def list_menu(pyconfig):
 
     # Show menu content
     try:
-        pylib.list_file_content(comic.path['menu'], pattern)
+        _print_contents(pylib.list_file_content(comic.path['menu'], pattern))
+        # pylib.list_file_content(comic.path['menu'], pattern)
     except pycomic_err.CSVError:
         print('File {} not exist'.format(comic.path['menu']))
         print('Use fetch-menu function to create menu file')
@@ -297,7 +340,8 @@ def list_url(pyconfig):
     comic.file_path(pyconfig.links(SECTION), 'links-dir')
 
     # Show matching data
-    pylib.list_files(comic.path['links-dir'], pattern)
+    _print_files(pylib.list_files(comic.path['links-dir'], pattern))
+    # pylib.list_files(comic.path['links-dir'], pattern)
 
 
 def source(pyconfig):
@@ -325,3 +369,30 @@ def _check_comic_existence(config, comic_name):
     except pycomic_err.ComicNotFoundError:
         logger.info('No match to {} found'.format(comic_name))
         sys.exit(11)
+
+
+def _print_files(files):
+    """
+    Output files information to terminal
+    """
+    print('------ START ------')
+    for index, file in files:
+        print('FILE TAG {:4d} : {:>20}'.format(index, file))
+    print('------- END -------')
+
+
+def _print_contents(contents):
+    """
+    Output contents to terminal
+    """
+    last_update, comic_state = '', ''
+
+    print('------ START ------')
+    for index, content in contents:
+        last_update, comic_state = content[2], content[3]
+        print('Identity Number {:4d} : {}'.format(index, content[0]))
+
+    print('------ INFO -------')
+    print('Last Update: {}'.format(last_update))
+    print('Comic State: {}'.format(comic_state))
+    print('------- END -------')

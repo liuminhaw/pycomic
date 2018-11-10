@@ -34,6 +34,13 @@ class FileExistError(pycomicError):
     pass
 
 
+class DataIndexError(pycomicError):
+    """
+    Raise when index out of range finding data
+    """
+    pass
+
+
 class CSVError(pycomicError):
     """
     Raise when failed to make action on csv file
@@ -41,11 +48,11 @@ class CSVError(pycomicError):
     pass
 
 
-class CSVContentError(pycomicError):
-    """
-    Raise when failed to find matching data within csv file
-    """
-    pass
+# class CSVContentError(pycomicError):
+#     """
+#     Raise when failed to find matching data within csv file
+#     """
+#     pass
 
 
 class TXTError(pycomicError):
