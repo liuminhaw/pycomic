@@ -18,6 +18,7 @@ from PIL import Image, ImageFile
 
 from pycomic_pkg import pycomic_999 as comic999
 from pycomic_pkg import pycomic_file as comic_file
+from pycomic_pkg import pycomic_manhuagui as manhuagui
 
 from pycomic_pkg import pycomic_lib as pylib
 from pycomic_pkg import user_agent_class as agentcl
@@ -30,6 +31,7 @@ LOG_DIR = os.path.join(os.getcwd(), 'log')
 
 SOURCE_999 = '999comics'
 SOURCE_FILE = 'file'
+SOURCE_MANHUAGUI = 'manhuagui'
 
 COMIC_999_URL_HOME = 'https://www.999comics.com'
 COMIC_999_URL = 'https://www.999comics.com/comic/'
@@ -51,6 +53,8 @@ def main():
         _comic999_action()
     elif source_type.lower() == SOURCE_FILE:
         _file_action()
+    elif source_type.lower() == SOURCE_MANHUAGUI:
+        _manhuagui_action()
     else:
         print('Source type {} not supported'.format(source))
 
@@ -729,6 +733,22 @@ def _comic999_action():
         comic999.verify()
     else:
         comic999.help()
+
+
+def _manhuagui_action():
+    """
+    Action determination for source: manhuagui
+    """
+    if len(sys.argv) == 1:
+        manhuagui.help()
+    elif sys.argv[1] == 'add':
+        manhuagui.add(pyconfig)
+    elif sys.argv[1] == 'list':
+        manhuagui.list(pyconfig)
+    elif sys.argv[1] == 'source':
+        manhuagui.source(pyconfig)
+    else:
+        manhuagui.help()
 
 
 def _file_action():

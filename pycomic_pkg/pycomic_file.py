@@ -46,7 +46,7 @@ def help():
         pycomic.py list-pdf [PATTERN]
         pycomic.py list-url [PATTERN]
         pycomic.py make-pdf COMICNAME
-        pycomic.py source [file|999comics]
+        pycomic.py source [file|999comics|manhuagui]
         pycomic.py state-change COMICNAME
         pycomic.py verify COMICNAME
     """
@@ -388,11 +388,11 @@ def source(pyconfig):
     message = \
     """
     USAGE:
-        pycomic.py source [file|999comics]
+        pycomic.py source [file|999comics|manhuagui]
     """
     if len(sys.argv) == 2:
         pylib.get_source(pyconfig)
-    elif sys.argv[2] == 'file' or sys.argv[2] == '999comics':
+    elif sys.argv[2] == 'file' or sys.argv[2] == '999comics' or sys.argv[2] == 'manhuagui':
         pylib.set_source(pyconfig, sys.argv[2])
     else:
         print(message)
