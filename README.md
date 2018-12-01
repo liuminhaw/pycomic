@@ -104,3 +104,64 @@ Change comic progress state
 Verify download images' integrity
 
     pycomic.py verify COMICNAME
+
+
+##### Type 999comics
+- add
+- error-url
+- fetch-menu
+- fetch-url
+- help
+- list
+- list-menu
+- list-url
+- source
+
+##### add
+Store comic information to menu csv file
+
+    pycomic.py add ENGLISHNAME CHINESENAME NUMBER
+
+##### error-url
+Show errors that occurs during url fetching process
+
+    pycomic.py error-url COMICNAME IDENTITYNUM
+
+##### fetch-menu
+Store chapter's information of each comic
+
+    pycomic.py fetch-menu COMICNAME
+
+##### fetch-url
+Store each image link of comic's chapter
+
+    pycomic.py fetch-url COMICNAME IDENTITYNUM
+
+##### help
+Show available command options
+
+    pycomic.py help
+
+##### list
+List stored comic information  
+Optional `PATTERN` search for matching
+
+    pycomic.py list [PATTERN]
+
+##### list-menu
+List chapter's information of comic  
+Optional `PATTERN` search for matching 
+
+    pycomic.py list-menu [PATTERN]
+
+##### list-url
+List pages' url of comic chapter  
+Optional `PATTERN` search for matching
+
+    pycomic.py list-url COMICNAME [PATTERN]
+
+##### source
+Change or reference source type
+Reference mode if no `SOURCE_TYPE` given
+
+    pycomic.py source [SOURCE_TYPE]

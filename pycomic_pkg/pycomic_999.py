@@ -140,7 +140,7 @@ def fetch_menu(pyconfig):
     pylib.check_structure(pyconfig, SECTION)
 
     # Find comic from menu csv file
-    eng_name, ch_name, number, status = _check_comic_existence(pyconfig, comic_name)
+    eng_name, ch_name, number, _status = _check_comic_existence(pyconfig, comic_name)
 
     # Define comic object
     comic = pylib.Comic(eng_name, ch_name, number)
@@ -297,7 +297,7 @@ def list_menu(pyconfig):
     pylib.check_structure(pyconfig, SECTION)
 
     # Find comic from menu csv file
-    eng_name, ch_name, number, status = _check_comic_existence(pyconfig, comic_name)
+    eng_name, ch_name, number, _status = _check_comic_existence(pyconfig, comic_name)
 
     # Define comic object
     comic = pylib.Comic(eng_name, ch_name, number)
@@ -365,6 +365,7 @@ def _check_comic_existence(config, comic_name):
     Exit program if no matching comic found
     """
     try:
+        # return eng_name, ch_name, number, status
         return pylib.find_menu_comic(config, SECTION, comic_name)
     except pycomic_err.ComicNotFoundError:
         logger.info('No match to {} found'.format(comic_name))

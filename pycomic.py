@@ -743,8 +743,12 @@ def _manhuagui_action():
         manhuagui.help()
     elif sys.argv[1] == 'add':
         manhuagui.add(pyconfig)
+    elif sys.argv[1] == 'fetch-menu':
+        manhuagui.fetch_menu(pyconfig)
     elif sys.argv[1] == 'list':
         manhuagui.list(pyconfig)
+    elif sys.argv[1] == 'list-menu':
+        manhuagui.list_menu(pyconfig)
     elif sys.argv[1] == 'source':
         manhuagui.source(pyconfig)
     else:

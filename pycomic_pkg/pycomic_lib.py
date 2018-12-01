@@ -145,6 +145,17 @@ class Driver():
         self.driver.close()
 
 
+    def page_source(self, js_execute=''):
+        """
+        Recent page html source code
+        """
+        if js_execute != '':
+            self.driver.execute_script(js_execute)
+        
+        self.html = self.driver.page_source
+        self.driver.close()
+
+
     def _comic_image_url(self, image_id):
         source, tag = 'src', 'img'
 

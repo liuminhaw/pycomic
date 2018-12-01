@@ -19,8 +19,10 @@ Error Code:
 import sys, os
 import csv, shutil
 import requests
+import re
 
 from selenium import webdriver
+from bs4 import BeautifulSoup
 
 from . import exceptions as pycomic_err
 from . import url_collections as url
@@ -39,8 +41,10 @@ def help():
     """
     USAGE:
         pycomic.py add ENGLISHNAME CHINESENAME NUMBER
+        pycomic.py fetch-menu COMICNAME
         pycomic.py help
         pycomic.py list [PATTERN]
+        pycomic.py list-menu [PATTERN]
         pycomic.py source [file|999comics|manhuagui]
     """
 
@@ -80,6 +84,78 @@ def add(pyconfig):
         logger.info('Write {} to menu csv file success'.format(data))
 
 
+def fetch_menu(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py fetch-menu COMICNAME
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+
+    # Find comic form menu csv file - eng_name, ch_name, number, status
+    eng_name, ch_name, number, _status = _check_comic_existence(pyconfig, comic_name)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name, number)
+    comic.file_path(pyconfig.menu(SECTION), 'menu', extension='_menu.csv')
+    comic.comic_site(pyconfig.site_url(SECTION), 'site-url')
+
+    # Page request
+    js_code = 'var elements = document.querySelectorAll("#chapter-list-1 ul"); \
+        elements.forEach(function(elem) {elem.style.display = "block";});'
+
+    driver = pylib.Driver(eng_name, comic.path['site-url'])
+    driver.get()
+    driver.page_source(js_execute=js_code)
+
+    # Information parsing
+    page_parse = BeautifulSoup(driver.html, 'html.parser')
+    css_selector_0 = 'div#chapter-list-0 ul li a'
+    css_selector_1 = 'div#chapter-list-1 ul li a'
+    date_selector = 'ul.detail-list li.status span'
+
+    if '已完結' in page_parse.text:
+        comic_state = '已完結'
+    else:
+        comic_state = '連載中'
+
+    date = page_parse.select(date_selector)[-1].text
+    chapter_list = page_parse.select(css_selector_0)
+    if len(chapter_list) == 0:
+        chapter_list = page_parse.select(css_selector_1)
+
+    # Construct data
+    data = []
+    for chapter in chapter_list:
+        chapter_url = pyconfig.home_url(SECTION) + chapter.get('href')
+        chapter_title = chapter.get('title')
+        data.append((chapter_title, chapter_url, date, comic_state))
+
+        # regex = re.compile(r'\d+')
+        # print(regex.search(chapter_title))
+
+
+    # Write csv file
+
+    data.sort(key=_menu_sort_function)
+    try:
+        pylib.write_csv(comic.path['menu'], data, index=False)
+    except pycomic_err.CSVError as err:
+        logger.warning('Error: {}'.format(err))
+        logger.info('Failed to write to {}'.format(comic.path['menu']))
+        sys.exit(16)
+    else:
+        logger.info('Write file {} success'.format(comic.path['menu']))
+    
+
+
 def list(pyconfig):
     message = \
     """
@@ -98,6 +174,41 @@ def list(pyconfig):
     pylib.list_menu_csv(pyconfig, SECTION, pattern)
 
 
+def list_menu(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py list-menu COMICNAME [PATTERN]
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    try:
+        pattern = sys.argv[3]
+    except IndexError:
+        pattern = ''
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    eng_name, ch_name, number, _status = _check_comic_existence(pyconfig, comic_name)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name, number)
+    comic.file_path(pyconfig.menu(SECTION), 'menu', extension='_menu.csv')
+
+    # Show menu content
+    try:
+        _print_contents(pylib.list_file_content(comic.path['menu'], pattern))
+    except pycomic_err.CSVError:
+        print('File {} not exist'.format(comic.path['menu']))
+        print('Use fetch-menu function to create menu file')
+
+
 def source(pyconfig):
     message = \
     """
@@ -111,3 +222,47 @@ def source(pyconfig):
     else:
         print(message)
         sys.exit(1)
+
+
+
+def _check_comic_existence(config, comic_name):
+    """
+    Find comic from menu csv file
+    Exit program if no matching comic found
+    """
+    try:
+        # return eng_name, ch_name, number, status
+        return pylib.find_menu_comic(config, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+
+def _menu_sort_function(item):
+    """
+    The value of the key parameter should be a function that 
+    takes a single argument and returns a key to use for sorting purposes.
+    """
+    regex = re.compile(r'\d+')
+    match = regex.search(item[0])
+    if match is None:
+        return -1
+    else:
+        return int(match.group())
+
+
+def _print_contents(contents):
+    """
+    Output contents to terminal
+    """
+    last_update, comic_state = '', ''
+
+    print('------ START ------')
+    for index, content in contents:
+        last_update, comic_state = content[2], content[3]
+        print('Identity Number {:4d} : {}'.format(index, content[0]))
+
+    print('------ INFO -------')
+    print('Last Update: {}'.format(last_update))
+    print('Comic State: {}'.format(comic_state))
+    print('------- END -------')
