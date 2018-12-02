@@ -3,7 +3,7 @@
 Fetching comic from multiple sources
 
 #### Additional Requirement
-selenium `driver` need to be installed before program can be run
+selenium `chromedriver` need to be installed before program can be run
 
 #### Setup
 Run `setup.sh` script to setup program for use  

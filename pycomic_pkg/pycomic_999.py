@@ -203,7 +203,7 @@ def fetch_url(pyconfig):
     pylib.check_structure(pyconfig, SECTION)
 
     # Find comic from menu csv file
-    eng_name, ch_name, number, status = _check_comic_existence(pyconfig, comic_name)
+    eng_name, ch_name, number, _status = _check_comic_existence(pyconfig, comic_name)
 
     # Define comic object
     comic = pylib.Comic(eng_name, ch_name, number)
@@ -224,7 +224,6 @@ def fetch_url(pyconfig):
     # comic.chapter_title, comic.url = comic_data[0], comic_data[1]
     comic.file_path(pyconfig.links(SECTION), 'links', name=comic.english, extension='_{}.csv'.format(driver.chapter_title))
     comic.file_path(pyconfig.links(SECTION), 'links-dir')
-
 
     # Start selenium driver
     try:
@@ -333,7 +332,7 @@ def list_url(pyconfig):
     pylib.check_structure(pyconfig, SECTION)
 
     # Find comic from menu csv
-    eng_name, ch_name, number, status = _check_comic_existence(pyconfig, comic_name)
+    eng_name, ch_name, number, _status = _check_comic_existence(pyconfig, comic_name)
 
     # Define comic object
     comic = pylib.Comic(eng_name, ch_name, number)

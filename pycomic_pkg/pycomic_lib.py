@@ -93,7 +93,8 @@ class Driver():
         pass
 
     def __init__(self, title, url):
-        self.driver = webdriver.Firefox()
+        # self.driver = webdriver.Firefox()
+        self.driver = webdriver.Chrome()
 
         self.chapter_title = title
         self.chapter_url = url
@@ -111,6 +112,7 @@ class Driver():
         """
         regex = re.compile(r'\d{1,3}')
         element = self.driver.find_element_by_css_selector(last_page_selector)
+
 
         try:
             self.total_pages = int(regex.search(element.text).group())
