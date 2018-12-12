@@ -94,7 +94,7 @@ class Driver():
 
     def __init__(self, title, url):
         # self.driver = webdriver.Firefox()
-        self.driver = webdriver.Chrome()
+        self.driver = webdriver.Firefox()
 
         self.chapter_title = title
         self.chapter_url = url

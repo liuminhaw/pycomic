@@ -137,12 +137,9 @@ def fetch_menu(pyconfig):
     data = []
     for chapter in chapter_list:
         chapter_url = pyconfig.home_url(SECTION) + chapter.get('href')
-        chapter_title = chapter.get('title')
+        chapter_type = chapter.find_parent('div').find_previous_sibling('h4').text
+        chapter_title = '{}-{}'.format(chapter_type, chapter.get('title'))
         data.append((chapter_title, chapter_url, date, comic_state))
-
-        # regex = re.compile(r'\d+')
-        # print(regex.search(chapter_title))
-
 
     # Write csv file
 
