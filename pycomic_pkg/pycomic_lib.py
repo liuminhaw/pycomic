@@ -9,6 +9,7 @@ Error Code:
 """
 
 import os, sys
+import random
 import configparser,  pathlib
 import csv, re, shutil
 import datetime, time
@@ -131,6 +132,7 @@ class Driver():
                     url = self._comic_image_url(image_id)
                     print('Page {} url {}'.format(counter, url))
                 except self.DriverError:
+                    self.driver.refresh()
                     continue
                 else:
                     # next_page = self.driver.find_element_by_id(next_page_selector)
@@ -142,6 +144,7 @@ class Driver():
 
             self.urls.append(url)
             next_page = self.driver.find_element_by_id(next_page_selector)
+            time.sleep(random.uniform(2, 3.5))
             next_page.click()
 
         self.driver.close()
@@ -604,7 +607,7 @@ def list_file_content(path, pattern, target_index=1):
     """
     re_pattern = re.compile(r'.*{}.*'.format(pattern))
     matched_contents = []
-    last_update, comic_state = '', ''
+    # last_update, comic_state = '', ''
 
     # Read file
     file_contents = read_csv(path)

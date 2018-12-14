@@ -41,6 +41,7 @@ def help():
     """
     USAGE:
         pycomic.py add ENGLISHNAME CHINESENAME NUMBER
+        pycomic.py error-url COMICNAME IDENTITYNUM
         pycomic.py fetch-menu COMICNAME
         pycomic.py fetch-url COMICNAME IDENTITYNUM
         pycomic.py help
@@ -84,6 +85,44 @@ def add(pyconfig):
         sys.exit(12)
     else:
         logger.info('Write {} to menu csv file success'.format(data))
+
+
+def error_url(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py error_url COMICNAME FILETAG
+    NOTE:
+        Use 'pycomic.py list-url' command to get FILETAG
+    """
+    try:
+        comic_name = sys.argv[2]
+        request_tag = int(sys.argv[3])
+    except (IndexError, ValueError):
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    eng_name, ch_name, number, _status = _check_comic_existence(pyconfig, comic_name)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name, number)
+    comic.file_path(pyconfig.links(SECTION), 'links-dir')
+    # print(pylib.index_data(comic.path['links-dir'], request_tag, file=False))
+    try:
+        comic.file_path(pyconfig.links(SECTION), 'links', name=pylib.index_data(comic.path['links-dir'], request_tag, file=False))
+    except pycomic_err.DataIndexError:
+        logger.info('File Tag {} not found'.format(request_tag))
+        sys.exit(18)
+
+    # Show errors
+    errors = pylib.list_file_content(comic.path['links'], 'error')
+    print('File {}'.format(comic.path['links']))
+    for index, error in errors:
+        print('Page {} error - {}'.format(index, error[1]))
 
 
 def fetch_menu(pyconfig):
@@ -274,7 +313,7 @@ def list_menu(pyconfig):
 
     # Show menu content
     try:
-        _print_contents(pylib.list_file_content(comic.path['menu'], pattern))
+        _print_contents(pylib.list_file_content(comic.path['menu'], pattern, target_index=0))
     except pycomic_err.CSVError:
         print('File {} not exist'.format(comic.path['menu']))
         print('Use fetch-menu function to create menu file')

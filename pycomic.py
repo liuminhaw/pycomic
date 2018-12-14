@@ -743,6 +743,8 @@ def _manhuagui_action():
         manhuagui.help()
     elif sys.argv[1] == 'add':
         manhuagui.add(pyconfig)
+    elif sys.argv[1] == 'error-url':
+        manhuagui.error_url(pyconfig)
     elif sys.argv[1] == 'fetch-menu':
         manhuagui.fetch_menu(pyconfig)
     elif sys.argv[1] == 'fetch-url':
