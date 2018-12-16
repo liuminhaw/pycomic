@@ -139,7 +139,7 @@ def convert(pyconfig):
     # Define comic object
     comic = pylib.Comic(eng_name, ch_name)
     comic.file_path(pyconfig.origin(SECTION), 'origin')
-    comic.file_path(pyconfig.format(SECTION), 'format')
+    comic.file_path(pyconfig.formatted(SECTION), 'format')
 
     # Convert images
     try:
@@ -177,7 +177,7 @@ def download(pyconfig):
 
     # Find comic from menu csv file
     try:
-        eng_name, ch_name, number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+        eng_name, ch_name, _number, _status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
     except pycomic_err.ComicNotFoundError:
         logger.info('No match to {} found'.format(comic_name))
         sys.exit(11)
@@ -291,7 +291,7 @@ def list_books(pyconfig):
         _print_files(pylib.list_files(pyconfig.origin(SECTION), pattern))
         # pylib.list_files(pyconfig.origin(SECTION), pattern)
     elif source_type == _FORMAT:
-        _print_files(pylib.list_files(pyconfig.format(SECTION), pattern))
+        _print_files(pylib.list_files(pyconfig.formatted(SECTION), pattern))
         # pylib.list_files(pyconfig.format(SECTION), pattern)
     else:
         print(message)
@@ -364,7 +364,7 @@ def make_pdf(pyconfig):
 
     # Define comic object
     comic = pylib.Comic(eng_name, ch_name)
-    comic.file_path(pyconfig.format(SECTION), 'books')
+    comic.file_path(pyconfig.formatted(SECTION), 'books')
     comic.file_path(pyconfig.comics(SECTION), 'pdf')
 
     # Make pdf

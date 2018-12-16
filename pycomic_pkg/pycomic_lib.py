@@ -120,7 +120,7 @@ class Driver():
         except Exception as err:
             raise self.DriverError(err)
 
-    def get_urls(self, image_id, next_page_selector):
+    def get_urls(self, image_id, next_page_selector, error_text='URL error occurs'):
         """
         All image urls
         """
@@ -139,7 +139,7 @@ class Driver():
                     # next_page.click()
                     break
             else:
-                url = 'URL error occurs'
+                url = error_text
                 print('Page {} {}'.format(counter, url))
 
             self.urls.append(url)
@@ -208,6 +208,7 @@ class Config():
         self.DEFAULT_DIR = 'pycomic'
         self.HOME_URL = 'Home-url'
         self.SITE_URL = 'Site-url'
+        self.ERROR_URL = 'error-url'
         self.DIRECTORY = 'Directory'
         self.MENU = 'Menu'
         self.LINKS = 'Links'
@@ -254,6 +255,11 @@ class Config():
         self._read_config(config_section)
         return self._site_url
 
+    def error_url(self, section_title):
+        config_section = self._read_section(section_title)
+        self._read_config(config_section)
+        return self._error_url
+
     def directory(self, section_title):
         config_section = self._read_section(section_title)
         self._read_config(config_section)
@@ -289,7 +295,7 @@ class Config():
         self._read_config(config_section)
         return os.path.join(self._directory, self._images, self._original)
 
-    def format(self, section_title):
+    def formatted(self, section_title):
         config_section = self._read_section(section_title)
         self._read_config(config_section)
         return os.path.join(self._directory, self._images, self._format)
@@ -317,6 +323,7 @@ class Config():
     def _read_config(self, section):
         self._site_url = self._read_key(section, self.SITE_URL)
         self._home_url = self._read_key(section, self.HOME_URL)
+        self._error_url = self._read_key(section, self.ERROR_URL)
         self._directory = self._read_key(section, self.DIRECTORY)
         self._menu = self._read_key(section, self.MENU)
         self._links = self._read_key(section, self.LINKS)
@@ -390,8 +397,8 @@ def check_structure(config, sec_title):
 
     # Check origin directory in books directory
     os.makedirs(config.origin(sec_title), exist_ok=True)
-    # Cehck jpeg directory in books directory
-    os.makedirs(config.format(sec_title), exist_ok=True)
+    # Check jpeg directory in books directory
+    os.makedirs(config.formatted(sec_title), exist_ok=True)
 
     if not os.path.exists(config.main_menu(sec_title)):
         file = open(config.main_menu(sec_title), mode='wt', encoding='utf-8')
@@ -522,7 +529,7 @@ def index_data(path, target_index, file=True):
         Return the index-th file in a directory
 
     Return:
-        List of found row
+        String of the matching index
     Error:
         CSVError - read_csv function failed
         DataIndexError - Failed to find matching index

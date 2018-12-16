@@ -4,7 +4,7 @@ Program:
 Author:
     haw
 Version:
-    0.1.2
+    0.1.3
 """
 
 import os, re
@@ -14,7 +14,7 @@ import time, datetime
 import requests
 
 
-def extract_images(input_file):
+def extract_images(input_file, duplicates=False):
     """
     Extract each image url from input_file.
 
@@ -37,6 +37,13 @@ def extract_images(input_file):
     except FileNotFoundError as err:
         print('Read file error {}: {}'.format(err.errno, err.strerror))
         raise
+
+    # Return duplicate urls
+    if duplicates:
+        urls_list = []
+        for url in urls:
+            urls_list.append(url[0])
+        return urls_list
 
     # Avoid storing duplicate urls
     urls_dict = collections.OrderedDict()
