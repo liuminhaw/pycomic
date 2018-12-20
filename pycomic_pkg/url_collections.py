@@ -4,12 +4,15 @@ Program:
 Author:
     haw
 Version:
-    0.1.3
+    0.2
+Note:
+    Version 0.2 change _image_request parameter: header
+    Not compatible with previous Version 0.1.X
 """
 
 import os, re
 import html, collections, hashlib
-import time, datetime
+import time, datetime, random
 
 import requests
 
@@ -106,6 +109,7 @@ def download_images(urls, target_directory, header=None):
         else:
             print('Download index {:>3} - URL {} exceed attempt limit'.format(index, url))
             errors.append('Index {:>3} exceed request attempt limit: {}'.format(index, url))
+        time.sleep(random.uniform(1, 2.5))
 
     return errors
 
@@ -122,12 +126,12 @@ def _image_request(url, header=None):
     """
     # Request for image
     if header:
-        image_request = requests.get(url, headers={'User-Agent': header})
+        image_request = requests.get(url, headers=header)
     else:
         image_request = requests.get(url)
 
     # Check status code
-    if image_request.status_code == requests.codes.ok:
+    if image_request.status_code == 200:
         return image_request
     else:
         raise RuntimeError('Request for image failed')
@@ -145,7 +149,7 @@ def _image_write(image, file_path):
     """
     try:
         with open(file_path, mode='wb') as file:
-            for chunk in image.iter_content(10000):
+            for chunk in image:
                 file.write(chunk)
     except FileNotFoundError as err:
         print('Write file error {}: {}'.format(err.errno, err.strerror))

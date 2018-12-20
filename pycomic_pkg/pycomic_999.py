@@ -15,6 +15,7 @@ Error Code:
     18 - DataIndexEror catch
     31 - HTTPError catch
     32 - DriverError catch
+    41 - Download images error
 """
 
 import sys, os
@@ -138,8 +139,15 @@ def download(pyconfig):
         sys.exit(10)
 
     urls = url.extract_images(comic.path['links'], duplicates=True)
-    errors = url.download_images(urls, comic.path['book'], header=pyconfig.useragent(SECTION))
-
+    # Remove book directory if error occur when downloading images
+    header = {'User-Agent': pyconfig.useragent(SECTION), 'Referer': referer}
+    try:
+        errors = url.download_images(urls, comic.path['book'], header=header)
+    except Exception as err:
+        logger.warning(err)
+        shutil.rmtree(comic.path['book'])
+        sys.exit(41)
+        
     # Show download error messages
     for error_message in errors:
         logger.info(error_message)

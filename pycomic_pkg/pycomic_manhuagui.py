@@ -41,6 +41,7 @@ def help():
     """
     USAGE:
         pycomic.py add ENGLISHNAME CHINESENAME NUMBER
+        pycomic.py download COMICNAME FILETAG
         pycomic.py error-url COMICNAME IDENTITYNUM
         pycomic.py fetch-menu COMICNAME
         pycomic.py fetch-url COMICNAME IDENTITYNUM
@@ -87,6 +88,88 @@ def add(pyconfig):
         logger.info('Write {} to menu csv file success'.format(data))
 
 
+def download(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py download COMICNAME FILETAG
+    NOTE:
+        use 'pycomic.py list-url' command to get FILETAG value
+    """
+    try:
+        comic_name = sys.argv[2]
+        request_tag = int(sys.argv[3])
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    try:
+        eng_name, ch_name, number, _status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name, number)
+    comic.file_path(pyconfig.menu(SECTION), 'menu', extension='_menu.csv')
+    comic.file_path(pyconfig.links(SECTION), 'links-dir')
+
+    # Get request referer value
+    try:
+        comic_data = pylib.index_data(comic.path['menu'], request_tag)
+    except pycomic_err.CSVError as err:
+        logger.warning(err)
+        logger.info('Failed to read file {}'.format(comic.path['menu']))
+        sys.exit(16)
+    except pycomic_err.DataIndexError:
+        logger.info('File Tag {} not found'.format(request_tag))
+        sys.exit(18)
+    else:
+        referer = comic_data[1]
+
+    # Get request tag's filename
+    try:
+        request_file = pylib.index_data(comic.path['links-dir'], request_tag, file=False)
+    except pycomic_err.CSVError as err:
+        logger.warning(err)
+        logger.info('Failed to list directory {}'.format(comic.path['links-dir']))
+        sys.exit(16)
+    except pycomic_err.DataIndexError:
+        logger.info('File Tag {} not found'.format(request_tag))
+        sys.exit(18)
+
+    comic.file_path(pyconfig.origin(SECTION), 'book', name=request_file.split('.')[0])
+    comic.file_path(pyconfig.links(SECTION), 'links', name=request_file)
+
+    # Download images
+    try:
+        os.makedirs(comic.path['book'])
+    except OSError:
+        logger.warning('Directory {} already exist'.format(comic.path['book']))
+        sys.exit(10)
+
+    urls = url.extract_images(comic.path['links'], duplicates=True)
+    # Remove book directory if error occur when downloading images
+    header = {'User-Agent': pyconfig.useragent(SECTION), 'Referer': referer}
+    try:
+        errors = url.download_images(urls, comic.path['book'], header=header)
+    except Exception as err:
+        logger.warning(err)
+        shutil.rmtree(comic.path['book'])
+        sys.exit(41)
+        
+    # Show download error messages
+    for error_message in errors:
+        logger.info(error_message)
+
+    # Download success
+    logger.info('Download {} {} complete'.format(comic.english, request_tag))
+
+    
 def error_url(pyconfig):
     message = \
     """
