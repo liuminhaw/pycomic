@@ -11,6 +11,7 @@ Run `setup.sh` script to setup program for use
 
     ./setup.sh DESTINATION
 
+
 #### Configuration
 `.pycomic.ini` config file will be create in user's home directory  
 Modify `.pycomic.ini` for custom configuration
@@ -19,7 +20,7 @@ Modify `.pycomic.ini` for custom configuration
 - New program structure
 - Multiple sources type
 
-##### Type File
+#### Type File
 - add
 - convert
 - download
@@ -106,13 +107,15 @@ Verify download images' integrity
     pycomic.py verify COMICNAME
 
 
-##### Type 999comics
+#### Type 999comics
 - add
+- download
 - error-url
 - fetch-menu
 - fetch-url
 - help
 - list
+- list-books
 - list-menu
 - list-url
 - source
@@ -121,6 +124,11 @@ Verify download images' integrity
 Store comic information to menu csv file
 
     pycomic.py add ENGLISHNAME CHINESENAME NUMBER
+
+##### download
+Save comic images to local 
+
+    pycomic.py download COMICNAME FILETAG
 
 ##### error-url
 Show errors that occurs during url fetching process
@@ -148,6 +156,13 @@ Optional `PATTERN` search for matching
 
     pycomic.py list [PATTERN]
 
+##### list-books
+List stored comic chapters  
+`origin` option to show raw image data  
+`format` option to show jpeg image data
+
+    pycomic.py list-books origin|format COMICNAME [PATTERN]
+
 ##### list-menu
 List chapter's information of comic  
 Optional `PATTERN` search for matching 
@@ -165,3 +180,85 @@ Change or reference source type
 Reference mode if no `SOURCE_TYPE` given
 
     pycomic.py source [SOURCE_TYPE]
+
+
+#### Type manhuagui
+- add
+- download (Status: Fixing)
+- error-url
+- fetch-menu
+- fetch-url (Status: Fixing)
+- help
+- list
+- list-books
+- list-menu
+- list-url
+- source
+- url-image
+
+##### add
+Store comic information to menu csv file
+
+    pycomic.py add ENGLISHNAME CHINESENAME NUMBER
+
+##### download (Status: Fixing)
+Save comic images to local 
+
+    pycomic.py download COMICNAME FILETAG
+
+##### error-url
+Show errors that occurs during url fetching process
+
+    pycomic.py error-url COMICNAME IDENTITYNUM
+
+##### fetch-menu
+Store chapter's information of each comic
+
+    pycomic.py fetch-menu COMICNAME
+
+##### fetch-url (Status: Fixing)
+Store each image link of comic's chapter
+
+    pycomic.py fetch-url COMICNAME IDENTITYNUM
+
+##### help
+Show available command options
+
+    pycomic.py help
+
+##### list
+List stored comic information  
+Optional `PATTERN` search for matching
+
+    pycomic.py list [PATTERN]
+
+##### list-books
+List stored comic chapters  
+`origin` option to show raw image data  
+`format` option to show jpeg image data
+
+    pycomic.py list-books origin|format COMICNAME [PATTERN]
+
+##### list-menu
+List chapter's information of comic  
+Optional `PATTERN` search for matching 
+
+    pycomic.py list-menu [PATTERN]
+
+##### list-url
+List pages' url of comic chapter  
+Optional `PATTERN` search for matching
+
+    pycomic.py list-url COMICNAME [PATTERN]
+
+##### source
+Change or reference source type
+Reference mode if no `SOURCE_TYPE` given
+
+    pycomic.py source [SOURCE_TYPE]
+
+##### url-image
+Temporary substitution function for `download` and `fetch-url`  
+Fetch image urls and download image at once
+
+    pycomic.py url-image COMICNAME IDENTITYNUM

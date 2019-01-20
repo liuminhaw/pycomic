@@ -4,6 +4,14 @@ certifi==2018.4.16
 chardet==3.0.4
 idna==2.6
 Pillow==5.1.0
+PyAutoGUI==0.9.41
+PyGetWindow==0.0.3
+PyMsgBox==1.0.6
+pyperclip==1.7.0
+PyRect==0.1.4
+PyScreeze==0.1.19
+python3-xlib==0.15
+PyTweening==1.0.3
 requests==2.20.0
 selenium==3.11.0
-urllib3==1.22
+urllib3==1.24.1

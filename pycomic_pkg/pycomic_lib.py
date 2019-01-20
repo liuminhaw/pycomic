@@ -102,6 +102,9 @@ class Driver():
         self.total_pages = 0
 
     def get(self):
+        """
+        Open url page on driver
+        """
         self.driver.get(self.chapter_url)
 
     def find_last_page(self, last_page_selector):
@@ -113,7 +116,6 @@ class Driver():
         """
         regex = re.compile(r'\d{1,3}')
         element = self.driver.find_element_by_css_selector(last_page_selector)
-
 
         try:
             self.total_pages = int(regex.search(element.text).group())

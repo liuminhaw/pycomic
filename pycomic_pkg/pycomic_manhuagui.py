@@ -29,6 +29,8 @@ from . import url_collections as url
 from . import logging_class as logcl
 from . import pycomic_lib as pylib
 
+from . import pycomic_tmp as pytmp
+
 
 SECTION = 'MANHUAGUI'
 LOG_DIR = os.path.join(os.getcwd(), 'log')
@@ -41,15 +43,17 @@ def help():
     """
     USAGE:
         pycomic.py add ENGLISHNAME CHINESENAME NUMBER
-        pycomic.py download COMICNAME FILETAG
+        pycomic.py download COMICNAME FILETAG (Status: Fixing)
         pycomic.py error-url COMICNAME IDENTITYNUM
         pycomic.py fetch-menu COMICNAME
-        pycomic.py fetch-url COMICNAME IDENTITYNUM
+        pycomic.py fetch-url COMICNAME IDENTITYNUM (Status: Fixing)
         pycomic.py help
         pycomic.py list [PATTERN]
+        pycomic.py list-books origin|format COMICNAME [PATTERN]
         pycomic.py list-menu [PATTERN]
         pycomic.py list-url COMICNAME [PATTERN]
         pycomic.py source [file|999comics|manhuagui]
+        pycomic.py url-image COMICNAME IDENTITYNUM
     """
 
     print(message)
@@ -367,6 +371,49 @@ def list(pyconfig):
     pylib.list_menu_csv(pyconfig, SECTION, pattern)
 
 
+def list_books(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py list-books origin|format COMICNAME [PATTERN]
+    """
+    _ORIGIN = 'origin'
+    _FORMAT = 'format'
+    source_type = ''
+
+    try:
+        source_type = sys.argv[2]
+        comic_name = sys.argv[3]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    try:
+        pattern = sys.argv[4]
+    except IndexError:
+        pattern = ''
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+
+    # Find comic from menu csv
+    eng_name, ch_name, number, _status = _check_comic_existence(pyconfig, comic_name)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name, number)
+    comic.file_path(pyconfig.origin(SECTION), 'origin')
+    comic.file_path(pyconfig.formatted(SECTION), 'format')
+
+    # Show matching data list
+    if source_type == _ORIGIN:
+        _print_files(pylib.list_files(comic.path['origin'], pattern))
+    elif source_type == _FORMAT:
+        _print_files(pylib.list_files(comic.path['format'], pattern))
+    else:
+        print(message)
+        sys.exit(1)
+
+
 def list_menu(pyconfig):
     message = \
     """
@@ -448,6 +495,93 @@ def source(pyconfig):
         print(message)
         sys.exit(1)
 
+
+def url_image(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py url-image COMICNAME IDENTITYNUM
+    NOTE:
+        Temporary function to substitutew download, which is not working at the moment
+    """
+    try:
+        comic_name = sys.argv[2]
+        request_identity = int(sys.argv[3])
+    except:
+        print(message)
+        sys.exit(1)    
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    eng_name, ch_name, number, _status = _check_comic_existence(pyconfig, comic_name)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name, number)
+    comic.file_path(pyconfig.menu(SECTION), 'menu', extension='_menu.csv')
+    # Read comic URL from COMICNAME_menu.csv file
+    try:
+        comic_data = pylib.index_data(comic.path['menu'], request_identity)
+    except pycomic_err.CSVError as err:
+        logger.warning(err)
+        logger.info('Failed to read file {}'.format(comic.path['menu']))
+        sys.exit(16)
+    except pycomic_err.DataIndexError:
+        logger.info('Identity Number {} not found'.format(request_identity))
+        sys.exit(18)
+
+    driver = pytmp.Driver(comic_data[0], comic_data[1])
+
+    # comic.chapter_title, comic.url = comic_data[0], comic_data[1]
+    comic.file_path(pyconfig.links(SECTION), 'links', name=comic.english, extension='_{}.csv'.format(driver.chapter_title))
+    comic.file_path(pyconfig.links(SECTION), 'links-dir')
+    comic.file_path(pyconfig.origin(SECTION), 'book', name=comic.english, extension='_{}'.format(driver.chapter_title))
+
+    # Start selenium driver
+    try:
+        driver.get()
+    except:
+        logger.info('Driver failed to request {}'.format(driver.chapter_url))
+        sys.exit(3)
+
+    # Information parsing
+    try:
+        driver.find_last_page('#pageSelect option:nth-last-child(1)')
+    except pylib.Driver.DriverError as err:
+        logger.warning('Error: {}'.format(err))
+        logger.info('Failed to get last page value')
+        sys.exit(32)
+
+    # Fetch urls and download images
+    driver.get_urls_and_images('mangaFile', 'next')
+
+    # Write to csv file
+    os.makedirs(comic.path['links-dir'], exist_ok=True)
+    try:
+        pylib.write_csv(comic.path['links'], driver.urls, index=True)
+    except pycomic_err.CSVError as err:
+        logger.warning('Error" {}'.format(err))
+        logger.info('Failed to write to {}'.format(comic.path['links']))
+
+        os.remove(comic.path['links'])
+        sys.exit(16)
+    else:
+        logger.info('Write file {} success'.format(comic.path['links']))
+
+    # Copy temp images to book location
+    try:
+        shutil.copytree(driver.dir_path, comic.path['book'])
+    except shutil.Error as err:
+        # Directory are the same
+        logger.warning('Error: {}'.format(err))
+        # print('Error: {}'.format(err))
+    except OSError as err:
+        logger.warning('Error: {}'.format(err))
+        # print('Error: {}'.format(err))
+    else:
+        logger.info('Save images to {} success'.format(comic.path['book']))
+        # print('Save images to {} success'.format(comic.path['book']))
 
 
 def _check_comic_existence(config, comic_name):

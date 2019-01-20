@@ -755,12 +755,16 @@ def _manhuagui_action():
         manhuagui.fetch_url(pyconfig)
     elif sys.argv[1] == 'list':
         manhuagui.list(pyconfig)
+    elif sys.argv[1] == 'list-books':
+        manhuagui.list_books(pyconfig)
     elif sys.argv[1] == 'list-menu':
         manhuagui.list_menu(pyconfig)
     elif sys.argv[1] == 'list-url':
         manhuagui.list_url(pyconfig)
     elif sys.argv[1] == 'source':
         manhuagui.source(pyconfig)
+    elif sys.argv[1] == 'url-image':
+        manhuagui.url_image(pyconfig)
     else:
         manhuagui.help()
 
