@@ -15,7 +15,10 @@ Run `setup.sh` script to setup program for use
 `pycomic_config.ini` config file will be create in user's home directory  
 Modify `pycomic_config.ini` for custom configuration
 
-### Version 1.3.2
+### Version 1.3.3
+
+##### v1.3.3 Update
+- Update urllib3 version due to security reason
 
 ##### v1.3.2 Update
 - Update requirements requests version due to security reason
