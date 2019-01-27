@@ -478,7 +478,7 @@ def verify(pyconfig):
         sys.exit(13)
 
     for image in truncated:
-        logger.info('Image file {} is truncated'.format(image))
+        logger.info('Image file {} in {} is truncated'.format(image, comic_name))
     logger.info('{} verification completed'.format(comic_name))
 
 

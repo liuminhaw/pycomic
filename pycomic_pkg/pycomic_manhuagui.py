@@ -43,6 +43,7 @@ def help():
     """
     USAGE:
         pycomic.py add ENGLISHNAME CHINESENAME NUMBER
+        pycomic.py convert-image COMICNAME FILETAG
         pycomic.py download COMICNAME FILETAG (Status: Fixing)
         pycomic.py error-url COMICNAME IDENTITYNUM
         pycomic.py fetch-menu COMICNAME
@@ -54,6 +55,7 @@ def help():
         pycomic.py list-url COMICNAME [PATTERN]
         pycomic.py source [file|999comics|manhuagui]
         pycomic.py url-image COMICNAME IDENTITYNUM
+        pycomic.py verify-image COMICNAME FILETAG
     """
 
     print(message)
@@ -90,6 +92,65 @@ def add(pyconfig):
         sys.exit(12)
     else:
         logger.info('Write {} to menu csv file success'.format(data))
+
+
+def convert_image(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py convert-image COMICNAME FILETAG
+    NOTE:
+        Use 'pycomic.py list-books' command to get FILETAG value
+    """
+    try:
+        comic_name = sys.argv[2]
+        request_tag = int(sys.argv[3])
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    try:
+        eng_name, ch_name, number, _status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name, number)
+    comic.file_path(pyconfig.links(SECTION), 'links-dir')
+    # Get request tag's filename
+    try:
+        request_file = pylib.index_data(comic.path['links-dir'], request_tag, file=False)
+    except pycomic_err.CSVError as err:
+        logger.warning(err)
+        logger.info('Failed to list directory {}'.format(comic.path['links-dir']))
+        sys.exit(16)
+    except pycomic_err.DataIndexError:
+        logger.info('File Tag {} not found'.format(request_tag))
+        sys.exit(18)
+
+    comic.file_path(pyconfig.origin(SECTION), 'origin', name=request_file.split('.')[0])
+    comic.file_path(pyconfig.formatted(SECTION), 'format', name=request_file.split('.')[0])
+
+    # Convert images
+    try:
+        os.makedirs(comic.path['format'])
+    except FileExistsError:
+        logger.warning('Directory {} already exist'.format(comic.path['format']))
+        sys.exit(21)
+
+    try:
+        pylib.convert_images_jpg(comic.path['origin'], comic.path['format'])
+    except IOError:
+        logger.warning('Failed to convert {} to jpeg files'.format(comic.path['origin']))
+        shutil.rmtree(comic.path['format'])
+        sys.exit(15)
+    else:
+        logger.info('Convert {} to jpeg files success'.format(comic.path['origin']))
 
 
 def download(pyconfig):
@@ -337,7 +398,7 @@ def fetch_url(pyconfig):
         sys.exit(32)
 
     # Fetch urls
-    driver.get_urls('mangaFile', 'next')
+    driver.get_urls('mangaFile', 'next', error_text=pyconfig.error_url(SECTION))
 
     # Write to csv file
     os.makedirs(comic.path['links-dir'], exist_ok=True)
@@ -582,6 +643,59 @@ def url_image(pyconfig):
     else:
         logger.info('Save images to {} success'.format(comic.path['book']))
         # print('Save images to {} success'.format(comic.path['book']))
+
+
+def verify_image(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py verify-image COMCINAME FILETAG
+    NOTE:
+        Use 'pycomic.py list-books' command to get FILETAG value
+    """
+    try:
+        comic_name = sys.argv[2]
+        request_tag = int(sys.argv[3])
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    try:
+        eng_name, ch_name, number, _status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name, number)
+    comic.file_path(pyconfig.links(SECTION), 'links-dir')
+    # Get request tag's filename
+    try:
+        request_file = pylib.index_data(comic.path['links-dir'], request_tag, file=False)
+    except pycomic_err.CSVError as err:
+        logger.warning(err)
+        logger.info('Failed to list directory {}'.format(comic.path['links-dir']))
+        sys.exit(16)
+    except pycomic_err.DataIndexError:
+        logger.info('File Tag {} not found'.format(request_tag))
+        sys.exit(18)
+
+    comic.file_path(pyconfig.origin(SECTION), 'book', name=request_file.split('.')[0])
+
+    # Verification
+    try:
+        truncated = pylib.verify_images(comic.path['book'])
+    except FileNotFoundError:
+        logger.warning('Directory {} not exist'.format(comic.path['books']))
+        sys.exit(13)
+
+    for image in truncated:
+        logger.info('Image file {} in {} {} is truncated'.format(image, comic_name, request_tag))
+    logger.info('{} {} verification completed'.format(comic_name, request_tag))
 
 
 def _check_comic_existence(config, comic_name):

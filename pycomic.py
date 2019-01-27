@@ -705,6 +705,8 @@ def _comic999_action():
         comic999.help()
     elif sys.argv[1] == 'add':
         comic999.add(pyconfig)
+    elif sys.argv[1] == 'convert-image':
+        comic999.convert_image(pyconfig)
     elif sys.argv[1] == 'download':
         comic999.download(pyconfig)
     elif sys.argv[1] == 'error-url':
@@ -731,8 +733,8 @@ def _comic999_action():
         comic999.make_pdf()
     elif sys.argv[1] == 'source':
         comic999.source(pyconfig)
-    elif sys.argv[1] == 'verify':
-        comic999.verify()
+    elif sys.argv[1] == 'verify-image':
+        comic999.verify_image(pyconfig)
     else:
         comic999.help()
 
@@ -745,6 +747,8 @@ def _manhuagui_action():
         manhuagui.help()
     elif sys.argv[1] == 'add':
         manhuagui.add(pyconfig)
+    elif sys.argv[1] == 'convert-image':
+        manhuagui.convert_image(pyconfig)
     elif sys.argv[1] == 'download':
         manhuagui.download(pyconfig)
     elif sys.argv[1] == 'error-url':
@@ -765,6 +769,8 @@ def _manhuagui_action():
         manhuagui.source(pyconfig)
     elif sys.argv[1] == 'url-image':
         manhuagui.url_image(pyconfig)
+    elif sys.argv[1] == 'verify-image':
+        manhuagui.verify_image(pyconfig)
     else:
         manhuagui.help()
 
