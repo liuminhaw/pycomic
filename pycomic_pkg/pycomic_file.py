@@ -357,7 +357,7 @@ def make_pdf(pyconfig):
 
     # Find comic from menu csv file
     try:
-        eng_name, ch_name, number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+        eng_name, ch_name, _number, _status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
     except pycomic_err.ComicNotFoundError:
         logger.info('No match to {} found'.format(comic_name))
         sys.exit(11)
@@ -417,7 +417,7 @@ def state_change(pyconfig):
 
     # Find comic from menu csv file
     try:
-        eng_name, ch_name, number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+        _eng_name, _ch_name, _number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
     except pycomic_err.ComicNotFoundError:
         logger.info('No match to {} found'.format(comic_name))
         sys.exit(11)

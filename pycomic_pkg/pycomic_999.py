@@ -13,6 +13,7 @@ Error Code:
     13 - FileNotFoundError catch
     16 - CSVError catch
     18 - DataIndexEror catch
+    21 - Directory exist error
     31 - HTTPError catch
     32 - DriverError catch
     41 - Download images error
@@ -50,8 +51,11 @@ def help():
         pycomic.py list [PATTERN]
         pycomic.py list-books origin|format COMICNAME [PATTERN]
         pycomic.py list-menu [PATTERN]
+        pycomic.py list-pdf COMICNAME [PATTERN]
         pycomic.py list-url COMICNAME [PATTERN]
+        pycomic.py make-pdf COMICNAME FILETAG
         pycomic.py source [file|999comics|manhuagui]
+        pycomic.py state-change COMICNAME
         pycomic.py verify-image COMICNAME FILETAG
     """
 
@@ -130,7 +134,7 @@ def convert_image(pyconfig):
         logger.info('File Tag {} not found'.format(request_tag))
         sys.exit(18)
 
-    comic.file_path(pyconfig.origin(SECTION), 'book', name=request_file.split('.')[0])
+    comic.file_path(pyconfig.origin(SECTION), 'origin', name=request_file.split('.')[0])
     comic.file_path(pyconfig.formatted(SECTION), 'format', name=request_file.split('.')[0])
 
     # Convert images
@@ -489,6 +493,37 @@ def list_menu(pyconfig):
         print('Use fetch-menu function to create menu file')
 
 
+def list_pdf(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py list-pdf COMICNAME [PATTERN]
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    try:
+        pattern = sys.argv[3]
+    except IndexError:
+        pattern = ''
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+
+    # Find comic from menu csv
+    eng_name, ch_name, number, _status = _check_comic_existence(pyconfig, comic_name)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name, number)
+    comic.file_path(pyconfig.comics(SECTION), 'pdf-dir')
+
+    # Show matching data
+    _print_files(pylib.list_files(comic.path['pdf-dir'], pattern))
+
+
 def list_url(pyconfig):
     message = \
     """
@@ -521,6 +556,67 @@ def list_url(pyconfig):
     # pylib.list_files(comic.path['links-dir'], pattern)
 
 
+def make_pdf(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py make-pdf COMICNAME FILETAG
+    NOTE:
+        Use 'pycomic.py list-books' command to get FILETAG value
+    """
+    try:
+        comic_name = sys.argv[2]
+        request_tag = int(sys.argv[3])
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+
+    # Find comic from menu csv file 
+    # To make sure that comic is already added to data structure
+    try:
+        eng_name, ch_name, number, _status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+    # Define comic object
+    comic = pylib.Comic(eng_name, ch_name, number)
+    comic.file_path(pyconfig.formatted(SECTION), 'books-dir')
+    # Get request tag's directory name
+    try:
+        request_file = pylib.index_data(comic.path['books-dir'], request_tag, file=False)
+    except pycomic_err.DataIndexError:
+        logger.info('File Tag {} not found'.format(request_tag))
+        sys.exit(18)
+    
+    comic.file_path(pyconfig.comics(SECTION), 'pdf-dir')
+    comic.file_path(pyconfig.formatted(SECTION), 'book', name=request_file.split('.')[0])
+    comic.file_path(pyconfig.comics(SECTION), 'pdf', name=request_file.split('.')[0])
+
+
+    # Make pdf
+    os.makedirs(comic.path['pdf-dir'], exist_ok=True)
+
+    try:
+        pylib.make_pdf(comic.path['book'], comic.path['pdf'])
+    except FileNotFoundError:
+        logger.warning('Directory {} not exist'.format(comic.path['book']))
+        sys.exit(13)
+    except pycomic_err.FileExistError:
+        logger.info('PDF file {} already exist'.format(comic.path['pdf']))
+        sys.exit(14)
+    except Exception as err:
+        logger.warning('Error: {}'.format(err))
+        logger.warning('Failed to make pdf file from {}'.format(comic.path['book']))
+        shutil.rmtree(comic.path['pdf'])
+        sys.exit(22)
+    else:
+        logger.info('Make PDF {} success'.format(comic.path['pdf']))
+
+
 def source(pyconfig):
     message = \
     """
@@ -534,6 +630,49 @@ def source(pyconfig):
     else:
         print(message)
         sys.exit(1)
+
+
+def state_change(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py state-change COMICNAME
+    """
+    try:
+        comic_name = sys.argv[2]
+    except IndexError:
+        print(message)
+        sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+
+    # Find comic from menu csv file
+    try:
+        _eng_name, _ch_name, _number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+    # Change comic state
+    COMPLETE = 'complete'
+    IN_PROGRESS = '--------'
+    if status == IN_PROGRESS:
+        status = COMPLETE
+    else:
+        status = IN_PROGRESS
+
+    try:
+        pylib.modify_menu(pyconfig.main_menu(SECTION), comic_name, status=status)
+    except pycomic_err.UpdateError:
+        logger.warning('Modify {} failed'.format(pyconfig.main_menu(SECTION)))
+        sys.exit(12)
+
+    # Success message
+    if status == IN_PROGRESS:
+        logger.info('{} marked as in progress'.format(comic_name))
+    else:
+        logger.info('{} marked as process complete'.format(comic_name))
 
 
 def verify_image(pyconfig):
@@ -563,13 +702,13 @@ def verify_image(pyconfig):
 
     # Define comic object
     comic = pylib.Comic(eng_name, ch_name, number)
-    comic.file_path(pyconfig.links(SECTION), 'links-dir')
+    comic.file_path(pyconfig.origin(SECTION), 'books-dir')
     # Get request tag's filename
     try:
-        request_file = pylib.index_data(comic.path['links-dir'], request_tag, file=False)
+        request_file = pylib.index_data(comic.path['books-dir'], request_tag, file=False)
     except pycomic_err.CSVError as err:
         logger.warning(err)
-        logger.info('Failed to list directory {}'.format(comic.path['links-dir']))
+        logger.info('Failed to list directory {}'.format(comic.path['books-dir']))
         sys.exit(16)
     except pycomic_err.DataIndexError:
         logger.info('File Tag {} not found'.format(request_tag))

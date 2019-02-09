@@ -12,6 +12,7 @@ Error Code:
     13 - FileNotFoundError catch
     16 - CSVError catch
     18 - DataIndexEror catch
+    21 - Directory exist error
     31 - HTTPError catch
     32 - DriverError catch
 """
@@ -672,13 +673,13 @@ def verify_image(pyconfig):
 
     # Define comic object
     comic = pylib.Comic(eng_name, ch_name, number)
-    comic.file_path(pyconfig.links(SECTION), 'links-dir')
+    comic.file_path(pyconfig.origin(SECTION), 'books-dir')
     # Get request tag's filename
     try:
-        request_file = pylib.index_data(comic.path['links-dir'], request_tag, file=False)
+        request_file = pylib.index_data(comic.path['books-dir'], request_tag, file=False)
     except pycomic_err.CSVError as err:
         logger.warning(err)
-        logger.info('Failed to list directory {}'.format(comic.path['links-dir']))
+        logger.info('Failed to list directory {}'.format(comic.path['books-dir']))
         sys.exit(16)
     except pycomic_err.DataIndexError:
         logger.info('File Tag {} not found'.format(request_tag))

@@ -724,15 +724,17 @@ def _comic999_action():
     elif sys.argv[1] == 'list-menu':
         comic999.list_menu(pyconfig)
     elif sys.argv[1] == 'list-pdf':
-        comic999.list_pdf()
+        comic999.list_pdf(pyconfig)
     elif sys.argv[1] == 'list-chapters':
         comic999.list_chapters()
     elif sys.argv[1] == 'list-url':
         comic999.list_url(pyconfig)
     elif sys.argv[1] == 'make-pdf':
-        comic999.make_pdf()
+        comic999.make_pdf(pyconfig)
     elif sys.argv[1] == 'source':
         comic999.source(pyconfig)
+    elif sys.argv[1] == 'state-change':
+        comic999.state_change(pyconfig)
     elif sys.argv[1] == 'verify-image':
         comic999.verify_image(pyconfig)
     else:
