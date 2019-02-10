@@ -18,6 +18,7 @@ import requests
 from PIL import Image
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 from pycomic_pkg import exceptions as pycomic_err
 from pycomic_pkg import logging_class as logcl
@@ -95,7 +96,9 @@ class Driver():
 
     def __init__(self, title, url):
         # self.driver = webdriver.Firefox()
-        self.driver = webdriver.Firefox()
+        options = Options()
+        options.set_headless(True)
+        self.driver = webdriver.Chrome(options=options)
 
         self.chapter_title = title
         self.chapter_url = url
