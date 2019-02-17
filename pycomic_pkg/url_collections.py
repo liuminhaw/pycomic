@@ -17,10 +17,19 @@ import time, datetime, random
 import requests
 
 
-def extract_images(input_file, duplicates=False):
+def extract_images(input_file, duplicates=False, extension=True):
     """
     Extract each image url from input_file.
 
+    duplicates:
+        False - Return a list of urls with no duplicates
+        True - Return a list of urls with duplicates
+    extension:
+        False - Extract urls that start with http / https only
+        True - Extract urls that start with http / https and ends with image extension
+
+    Image Extension:
+        jpg, jpeg, png
     Return:
         A list of urls
     Error:
@@ -28,7 +37,10 @@ def extract_images(input_file, duplicates=False):
     """
 
     # Image url regular expression
-    URL_REGEX = r'((http)(s)?(\S)*(\.jpg|\.jpeg|\.png))'
+    if extension:
+        URL_REGEX = r'((http)(s)?(\S)*(\.jpg|\.jpeg|\.png))'
+    else:
+        URL_REGEX = r'((http)(s)?(\S)*)'
     url_regex = re.compile(URL_REGEX, re.IGNORECASE)
 
     # Extract urls
@@ -71,10 +83,16 @@ def download_image(url, target_path, header=None):
         urlError - Raised if image request failed
     """
     # Request for image file
-    try:
-        img_request = _image_request(url, header)
-    except RuntimeError:
-        raise urlError('Request for image {} failed'.format(url))
+    print('Header: {}'.format(header))
+    for _ in range(5):
+        try:
+            print('Request URL: {}'.format(url))
+            img_request = _image_request(url, header)
+            break
+        except RuntimeError:
+            time.sleep(1)
+    else:
+        raise ReferenceError('Request for image {} failed'.format(url))
 
     # Write image to file_path
     _image_write(img_request, target_path)
@@ -126,14 +144,17 @@ def _image_request(url, header=None):
     """
     # Request for image
     if header:
+        print('Run with header')
         image_request = requests.get(url, headers=header)
     else:
+        print('Run without header')
         image_request = requests.get(url)
 
     # Check status code
     if image_request.status_code == 200:
         return image_request
     else:
+        print('Respond Code: {}'.format(image_request.status_code))
         raise RuntimeError('Request for image failed')
 
 

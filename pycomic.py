@@ -725,8 +725,6 @@ def _comic999_action():
         comic999.list_menu(pyconfig)
     elif sys.argv[1] == 'list-pdf':
         comic999.list_pdf(pyconfig)
-    elif sys.argv[1] == 'list-chapters':
-        comic999.list_chapters()
     elif sys.argv[1] == 'list-url':
         comic999.list_url(pyconfig)
     elif sys.argv[1] == 'make-pdf':
@@ -765,10 +763,16 @@ def _manhuagui_action():
         manhuagui.list_books(pyconfig)
     elif sys.argv[1] == 'list-menu':
         manhuagui.list_menu(pyconfig)
+    elif sys.argv[1] == 'list-pdf':
+        manhuagui.list_pdf(pyconfig)
     elif sys.argv[1] == 'list-url':
         manhuagui.list_url(pyconfig)
+    elif sys.argv[1] == 'make-pdf':
+        manhuagui.make_pdf(pyconfig)
     elif sys.argv[1] == 'source':
         manhuagui.source(pyconfig)
+    elif sys.argv[1] == 'state-change':
+        manhuagui.state_change(pyconfig)
     elif sys.argv[1] == 'url-image':
         manhuagui.url_image(pyconfig)
     elif sys.argv[1] == 'verify-image':
