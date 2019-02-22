@@ -144,7 +144,7 @@ def _image_request(url, header=None):
     """
     # Request for image
     if header:
-        print('Run with header')
+        print('Run with header {}'.format(header))
         image_request = requests.get(url, headers=header)
     else:
         print('Run without header')

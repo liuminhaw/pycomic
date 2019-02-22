@@ -54,6 +54,7 @@ def help():
         pycomic.py list [PATTERN]
         pycomic.py list-books origin|format COMICNAME [PATTERN]
         pycomic.py list-menu [PATTERN]
+        pycomic.py list-pdf COMICNAME [PATTERN]
         pycomic.py list-url COMICNAME [PATTERN]
         pycomic.py make-pdf COMICNAME FILETAG
         pycomic.py source [file|999comics|manhuagui]
@@ -427,7 +428,7 @@ def fetch_url(pyconfig):
 
 
 def list(pyconfig):
-    message = \
+    _message = \
     """
     USAGE:
         pycomic.py list [PATTERN]

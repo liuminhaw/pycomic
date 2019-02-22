@@ -397,7 +397,7 @@ def fetch_url(pyconfig):
 
 
 def list(pyconfig):
-    message = \
+    _message = \
     """
     USAGE:
         pycomic.py list [PATTERN]

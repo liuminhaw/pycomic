@@ -713,7 +713,7 @@ def modify_menu(path, target, eng_name=None, ch_name=None, number=None, status=N
     try:
         write_csv(path, csv_data_new, index=False)
     except:
-        shutil.copfile(bkp_path, path)
+        shutil.copyfile(bkp_path, path)
         raise pycomic_err.UpdateError
     else:
         os.remove(bkp_path)
@@ -811,19 +811,19 @@ def set_source(config, source_type):
     config.source(source_type)
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
     # Test Config class
-    config = Config(['not_exist.ini', '../pycomic_template.ini'])
+    # config = Config(['not_exist.ini', '../pycomic_template.ini'])
 
-    print(config.useragent())
-    print(config.directory())
-    print(config.menu())
-    print(config.links())
-    print(config.images())
-    print(config.comics())
-    print(config.main_menu())
-    print(config.raw())
-    print(config.refine())
+    # print(config.useragent())
+    # print(config.directory())
+    # print(config.menu())
+    # print(config.links())
+    # print(config.images())
+    # print(config.comics())
+    # print(config.main_menu())
+    # print(config.raw())
+    # print(config.refine())
 
-    print(config.source())
+    # print(config.source())

@@ -3,7 +3,8 @@
 Fetching comic from multiple sources
 
 #### Additional Requirement
-selenium `chromedriver` need to be installed before program can be run
+selenium `chromedriver` need to be installed before program can be run  
+(Use automated chrome to run the program)
 
 #### Setup
 Run `setup.sh` script to setup program for use  
@@ -11,14 +12,16 @@ Run `setup.sh` script to setup program for use
 
     ./setup.sh DESTINATION
 
-
 #### Configuration
 `.pycomic.ini` config file will be create in user's home directory  
 Modify `.pycomic.ini` for custom configuration
 
-### In Development
+### Version 2.0.0
 - New program structure
 - Multiple sources type
+  - file
+  - 999comics
+  - manhuagui
 
 #### Type File
 - add
@@ -102,13 +105,14 @@ Change comic progress state
     pycomic.py state-change COMICNAME
 
 ##### verify
-Verify download images' integrity
+Verify download images integrity
 
     pycomic.py verify COMICNAME
 
 
 #### Type 999comics
 - add
+- convert-image
 - download
 - error-url
 - fetch-menu
@@ -117,13 +121,22 @@ Verify download images' integrity
 - list
 - list-books
 - list-menu
+- list-pdf
 - list-url
+- make-pdf
 - source
+- state-change
+- verify-image
 
 ##### add
 Store comic information to menu csv file
 
     pycomic.py add ENGLISHNAME CHINESENAME NUMBER
+
+##### convert-image
+Convert images to jpeg file type
+
+    pycomic.py convert-image COMICNAME FILETAG
 
 ##### download
 Save comic images to local 
@@ -169,11 +182,22 @@ Optional `PATTERN` search for matching
 
     pycomic.py list-menu [PATTERN]
 
+##### list-pdf
+List pdf file for comic
+Optional `PATTERN` search for matching
+
+    pycomic.py list-pdf COMICNAME [PATTERN]
+
 ##### list-url
 List pages' url of comic chapter  
 Optional `PATTERN` search for matching
 
     pycomic.py list-url COMICNAME [PATTERN]
+
+##### make-pdf
+Make pdf file from downloaded images
+
+    pycomic.py make-pdf COMICNAME FILETAG
 
 ##### source
 Change or reference source type
@@ -181,25 +205,46 @@ Reference mode if no `SOURCE_TYPE` given
 
     pycomic.py source [SOURCE_TYPE]
 
+##### state-change
+Change comic progress state
+
+    pycomic.py state-change COMICNAME
+
+##### verify-image
+Verify downloaded images integrity
+Verify `origin` downloaded images
+
+    pycomic.py verify-image COMICNAME FILETAG
+
 
 #### Type manhuagui
 - add
-- download (Status: Fixing)
+- convert-image
+- download 
 - error-url
 - fetch-menu
-- fetch-url (Status: Fixing)
+- fetch-url 
 - help
 - list
 - list-books
 - list-menu
+- list-pdf
 - list-url
+- make-pdf
 - source
+- state-change
 - url-image
+- verify-image
 
 ##### add
 Store comic information to menu csv file
 
     pycomic.py add ENGLISHNAME CHINESENAME NUMBER
+
+##### convert-image
+Convert images to jpeg file type
+
+    pycomic.py convert-image COMICNAME FILETAG
 
 ##### download (Status: Fixing)
 Save comic images to local 
@@ -216,7 +261,7 @@ Store chapter's information of each comic
 
     pycomic.py fetch-menu COMICNAME
 
-##### fetch-url (Status: Fixing)
+##### fetch-url 
 Store each image link of comic's chapter
 
     pycomic.py fetch-url COMICNAME IDENTITYNUM
@@ -245,11 +290,22 @@ Optional `PATTERN` search for matching
 
     pycomic.py list-menu [PATTERN]
 
+##### list-pdf
+List pdf file for comic
+Optional `PATTERN` search for matching
+
+    pycomic.py list-pdf COMICNAME [PATTERN]
+
 ##### list-url
 List pages' url of comic chapter  
 Optional `PATTERN` search for matching
 
     pycomic.py list-url COMICNAME [PATTERN]
+
+##### make-pdf
+Make pdf file from downloaded images
+
+    pycomic.py make-pdf COMICNAME FILETAG
 
 ##### source
 Change or reference source type
@@ -257,8 +313,18 @@ Reference mode if no `SOURCE_TYPE` given
 
     pycomic.py source [SOURCE_TYPE]
 
+##### state-change
+Change comic progress state
+
+    pycomic.py state-change COMICNAME
+
 ##### url-image
 Temporary substitution function for `download` and `fetch-url`  
 Fetch image urls and download image at once
 
     pycomic.py url-image COMICNAME IDENTITYNUM
+
+##### verify-image
+Verify downloaded images integrity
+
+    pycomic.py verify-image COMICNAME FILETAG
