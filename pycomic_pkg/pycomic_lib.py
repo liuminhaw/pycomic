@@ -733,7 +733,12 @@ def verify_images(path):
     images.sort()
 
     for image in images:
-        img = Image.open(os.path.join(path, image))
+        try:
+            img = Image.open(os.path.join(path, image))
+        except OSError:
+            truncated_images.append(os.path.join(path, image))
+            continue
+
         try:
             img.load()
         except IOError:
