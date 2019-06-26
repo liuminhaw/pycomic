@@ -188,13 +188,15 @@ def download(pyconfig):
     comic.file_path(pyconfig.refine(SECTION), 'refine')
 
     # Download images
+    header = {'User-Agent': pyconfig.useragent(SECTION)}
     try:
         os.mkdir(comic.path['book'])
     except FileExistsError:
         logger.warning('Directory {} already exist'.format(comic.path['book']))
         sys.exit(21)
     urls = url.extract_images(comic.path['refine'])
-    errors = url.download_images(urls, comic.path['book'], header=pyconfig.useragent(SECTION))
+    print('Header: {}'.format(header))
+    errors = url.download_images(urls, comic.path['book'], header=header)
     # errors = url.download_images(urls, comic.path['book'], header='Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0')
 
     # Show download error messages
