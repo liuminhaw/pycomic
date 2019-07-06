@@ -12,6 +12,7 @@ import datetime, time
 import pyautogui, pyperclip
 
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 
 class Driver():
@@ -23,6 +24,8 @@ class Driver():
         pass
 
     def __init__(self, title, url):
+        options = Options()
+        options.set_headless(False)
         self.driver = webdriver.Chrome()
 
         self.chapter_title = title
@@ -105,7 +108,58 @@ class Driver():
             
             
 
+class EynyDriver():
+    
+    def __init__(self, url):
+        options = Options()
+        options.set_headless(False)
+        self.driver = webdriver.Chrome()
 
+        self.url = url
 
+        self.dir_path = '/tmp/pycomic'
+
+    def get(self):
+        self.driver.get(self.url)
+
+    def download_images(self, urls):
+        """
+        urls: list of urls
+        """
+        self.urls = urls
+
+        # Temporary save location
+        if os.path.isdir(self.dir_path):
+            shutil.rmtree(self.dir_path)
+        os.mkdir(self.dir_path)
+
+        # Save images
+        for handle in self.driver.window_handles[1:]:
+            self.driver.switch_to.window(handle)
+            self.driver.close()
+        self.driver.switch_to.window(self.driver.window_handles[0])
+
+        for index, url in enumerate(self.urls):
+            self.driver.execute_script("window.open('{page}');".format(page=url))
+            time.sleep(1.2)
+            self.driver.switch_to.window(self.driver.window_handles[-1])
+
+            filename = datetime.datetime.now().strftime('%Y%m%dT%H%M%SMS%f')
+            file_path = '{}/{}'.format(self.dir_path, filename)
+            pyperclip.copy(file_path)
+            time.sleep(0.3)
+            pyautogui.hotkey('ctrl', 's') # Show save image popup
+            time.sleep(0.2)
+            pyautogui.hotkey('ctrl', 'v') # Paste image path
+            pyautogui.press('enter')
+
+            print('Page {} downloaded - {}'.format(index, url))
+
+            for handle in self.driver.window_handles[1:]:
+                self.driver.switch_to.window(handle)
+                self.driver.close()
+            self.driver.switch_to.window(self.driver.window_handles[0])
+
+        self.driver.close()
 
     

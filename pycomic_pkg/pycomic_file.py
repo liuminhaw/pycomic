@@ -6,6 +6,7 @@ Author:
 
 Error Code:
     1 - Program usage error
+    3 - Webpage request error
     11 - ComicNotFoundError catch
     12 - UpdateError catch
     13 - FileNotFoundError catch
@@ -24,6 +25,8 @@ from pycomic_pkg import exceptions as pycomic_err
 from pycomic_pkg import url_collections as url
 from pycomic_pkg import logging_class as logcl
 from pycomic_pkg import pycomic_lib as pylib
+
+from . import pycomic_tmp as pytmp
 
 
 SECTION = 'FILE'
@@ -49,6 +52,8 @@ def help():
         pycomic.py source [file|999comics|manhuagui]
         pycomic.py state-change COMICNAME
         pycomic.py verify COMICNAME
+        ----------------------------------------------
+        pycomic.py eyny-download URL
     """
 
     print(message)
@@ -108,6 +113,7 @@ def add(pyconfig):
     except pycomic_err.TXTError as err:
         logger.warning('Error: {}'.format(err))
         logger.info('Failed to write to {}'.format(comic.path['raw']))
+        # TODO: Delete data that was added to main menu
         sys.exit(17)
     else:
         logger.info('Write contents to {} success'.format(comic.path['raw']))
@@ -223,7 +229,7 @@ def fetch_url(pyconfig):
 
     # Find comic from menu csv file
     try:
-       eng_name, ch_name, number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+       eng_name, ch_name, _number, _status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
     except pycomic_err.ComicNotFoundError:
         logger.info('No match to {} found'.format(comic_name))
         sys.exit(11)
@@ -483,6 +489,116 @@ def verify(pyconfig):
         logger.info('Image file {} in {} is truncated'.format(image, comic_name))
     logger.info('{} verification completed'.format(comic_name))
 
+
+def eyny_download(pyconfig):
+    message = \
+    """
+    USAGE:
+        pycomic.py eyny-download URL
+    """
+
+    try:
+        eyny_url = sys.argv[2]
+    except IndexError:
+            print(message)
+            sys.exit(1)
+
+    # Check directory structure
+    pylib.check_structure(pyconfig, SECTION)
+    _check(pyconfig, SECTION)
+
+    # Get comic information: ENGLISHNAME CHINESENAME
+    eng_name = input('Comic english name: ')
+    ch_name = input('Comic chinese name: ')
+
+    # Check to avoid duplicated comic information
+    pylib.check_menu_duplicate(pyconfig, SECTION, ch_name, eng_name)
+
+    # Open URL webpage
+    driver = pytmp.EynyDriver(eyny_url)
+    try:
+        driver.get()
+    except:
+        logger.info('Driver failed to request {}'.format(driver.url))
+        sys.exit(3)
+
+    # Add
+    # Get file content from user
+    print('Enter file content. Ctrl-D to save.')
+    contents = []
+
+    while True:
+        try:
+            line = input()
+        except EOFError:
+            break
+        contents.append(line)
+
+    # Define Comic object
+    comic = pylib.Comic(eng_name, ch_name)
+    comic.file_path(pyconfig.raw(SECTION), 'raw')
+    comic.file_path(pyconfig.refine(SECTION), 'refine')
+    comic.file_path(pyconfig.origin(SECTION), 'book')
+
+    # Add data to main menu
+    book_number = '-----'
+    process_state = '-------'
+    data = [eng_name, ch_name, book_number, process_state]
+    try:
+        pylib.update_menu(pyconfig.main_menu(SECTION), data)
+    except pycomic_err.UpdateError:
+        logger.warning('Update {} failed'.format(pyconfig.main_menu(SECTION)))
+        sys.exit(12)
+
+    logger.info('Write {} to menu csv file success'.format(data))
+
+    # Write raw data file
+    try:
+        pylib.write_txt(comic.path['raw'], contents)
+    except pycomic_err.TXTError as err:
+        logger.warning('Error: {}'.format(err))
+        logger.info('Failed to write to {}'.format(comic.path['raw']))
+        # TODO: Delete data that was added to main menu
+        sys.exit(17)
+    else:
+        logger.info('Write contents to {} success'.format(comic.path['raw']))
+
+    # Fetch-url
+    # Find comic from menu csv file
+    comic_name = eng_name
+    try:
+        eng_name, ch_name, _number, _status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+    except pycomic_err.ComicNotFoundError:
+        logger.info('No match to {} found'.format(comic_name))
+        sys.exit(11)
+
+    # Extract links
+    urls = url.extract_images(comic.path['raw'])
+
+    # Save links to extract file
+    try:
+        pylib.write_csv(comic.path['refine'], urls)
+    except pycomic_err.CSVError as err:
+        logger.warning('Error: {}'.format(err))
+        logger.info('Failed to write to {}'.format(comic.path['refine']))
+        sys.exit(16)
+    else:
+        logger.info('Extract file {} success'.format(eng_name))
+
+    # Download
+    driver.download_images(urls)
+
+    # Copy temp images to book location
+    try:
+        shutil.copytree(driver.dir_path, comic.path['book'])
+    except shutil.Error as err:
+        # Directory are the same
+        logger.warning('Error: {}'.format(err))
+    except OSError as err:
+        logger.warning('Error: {}'.format(err))
+    else:
+        logger.info('Save images to  {} success'.format(comic.path['book']))
+    
 
 
 def _check(config, sec_title):

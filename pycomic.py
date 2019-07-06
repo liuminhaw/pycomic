@@ -175,6 +175,8 @@ def _file_action():
         comic_file.fetch_url(pyconfig)
     elif sys.argv[1] == 'verify':
         comic_file.verify(pyconfig)
+    elif sys.argv[1] == 'eyny-download':
+        comic_file.eyny_download(pyconfig)
     else:
         comic_file.help()
 
