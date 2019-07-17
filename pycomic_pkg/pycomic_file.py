@@ -496,12 +496,17 @@ def eyny_download(pyconfig):
     USAGE:
         pycomic.py eyny-download URL
     """
+    _EYNY_LOGIN = 'https://www.eyny.com/member.php?mod=logging&action=login'
 
     try:
         eyny_url = sys.argv[2]
     except IndexError:
             print(message)
             sys.exit(1)
+
+    # Get user config - eyny
+    user_config = pylib.UserConfig(['user_config.ini'])
+    user_info = user_config.eyny_info()
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -514,13 +519,27 @@ def eyny_download(pyconfig):
     # Check to avoid duplicated comic information
     pylib.check_menu_duplicate(pyconfig, SECTION, ch_name, eng_name)
 
-    # Open URL webpage
-    driver = pytmp.EynyDriver(eyny_url)
+    # Open login page
+    driver = pytmp.EynyDriver()
     try:
-        driver.get()
+        driver.get(_EYNY_LOGIN)
     except:
-        logger.info('Driver failed to request {}'.format(driver.url))
+        logger.info('Driver failed to request {}'.format(_EYNY_LOGIN))
         sys.exit(3)
+
+    # Login
+    driver.login(user_info)
+
+    # Open URL webpage
+    try:
+        driver.get(eyny_url)
+    except:
+        logger.info('Driver failed to request {}'.format(eyny_url))
+        sys.exit(3)
+
+    # Adult confirmation
+    # TODO: Test for adult confirm page
+    driver.adult_confirm()
 
     # Add
     # Get file content from user

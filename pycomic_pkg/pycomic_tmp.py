@@ -110,21 +110,50 @@ class Driver():
 
 class EynyDriver():
     
-    def __init__(self, url):
+    def __init__(self):
         options = Options()
         options.set_headless(False)
         self.driver = webdriver.Chrome()
 
-        self.url = url
-
         self.dir_path = '/tmp/pycomic'
 
-    def get(self):
-        self.driver.get(self.url)
+    def get(self, url):
+        self.driver.get(url)
+
+    def login(self, user_data):
+        """
+        Do login steps of  eyny site
+        Input:
+            user_data - tuple (username, password)
+        """
+        username, password = user_data
+
+        # Find target elements
+        username_input = self.driver.find_element_by_name('username')
+        password_input = self.driver.find_element_by_name('password')
+        cookie_time = self.driver.find_element_by_name('cookietime')
+        login_submit = self.driver.find_element_by_name('loginsubmit')
+
+        # Login
+        username_input.send_keys(username)
+        password_input.send_keys(password)
+        cookie_time.click()
+        login_submit.click()
+        time.sleep(7)
+
+    def adult_confirm(self):
+        """
+        Get pass adult confirm page
+        """
+        adult_submit = self.driver.find_element_by_name('submit')
+        adult_submit.click()
 
     def download_images(self, urls):
         """
-        urls: list of urls
+        Simulate image download process using pyautogui
+        (Download like how a human do it)
+        Input:
+            urls - list of urls
         """
         self.urls = urls
 
