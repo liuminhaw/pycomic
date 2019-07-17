@@ -236,6 +236,7 @@ class Config():
         # Make sure ini file exist
         if len(self._config_found) == 0:
             logger.warning('No config file found')
+            # TODO: Better if throw exception
             sys.exit(1)
 
 
@@ -356,6 +357,7 @@ class Config():
             section = self._config[name]
         except:
             logger.warning('Cannot find {} section in .ini files.'.format(name))
+            # TODO: Better if throw exception
             sys.exit(3)
         else:
             return section
@@ -382,6 +384,65 @@ class Config():
         for file in self._config_found:
             with open(file, 'w') as config_file:
                 self._config.write(config_file)
+
+
+class UserConfig():
+    """
+    Error Code:
+        1 - No config file in candidates found
+        3 - CONFIG section not found
+        11 - EYNY section username not set
+        13 - EYNY section password not set
+    """
+
+    def __init__(self, candidates):
+        """
+        Input:
+            candidates - ini config files list
+        """
+
+        # Get config information
+        self._config = configparser.ConfigParser()
+        self._config_found = self._config.read(candidates)
+
+        # Make sure candidates file existed
+        if len(self._config_found) == 0:
+            logger.warning('No user config file found')
+            # TODO: Better if throw exception
+            sys.exit(1)
+
+    def eyny_info(self):
+        """
+        Usage:
+            Read EYNY section and return user information
+        Return:
+            Tuple: (username, password)
+        """
+        # Get section
+        try: 
+            section = self._config['EYNY']
+        except:
+            logger.warning('Cannot find EYNY section in config files')
+            # TODO: Better if throw exception
+            sys.exit(3)
+        
+        # Fetch information
+        username = section.get('username')
+        password = section.get('password')
+
+        # Test username and password value
+        if len(username) == 0:
+            logger.info('EYNY username not set')
+            # TODO: Better if throw exception
+            sys.exit(11)
+
+        if len(password) == 0:
+            logger.info('EYNY password not set')
+            # TODO: Better if throw exception
+            sys.exit(13)
+
+        return (username, password)
+
 
 
 ##### Functions #####
