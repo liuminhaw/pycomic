@@ -13,10 +13,17 @@ Run `setup.sh` script to setup program for use
     ./setup.sh DESTINATION
 
 #### Configuration
-`.pycomic.ini` config file will be create in user's home directory  
-Modify `.pycomic.ini` for custom configuration
+`pycomic_config.ini` config file will be created in destination directory  
+Modify `pycomic_config.ini` for custom configuration
 
-### Version 2.0.0
+`user_config.ini` config file will be created in destination directory  
+Set username and password in `user_config.ini` for auto-login 
+
+### Version 2.1.0
+- File new function: eyny-download
+- Add user config file for sites auto-login
+
+**Version 2.0.0**
 - New program structure
 - Multiple sources type
   - file
