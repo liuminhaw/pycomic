@@ -604,8 +604,10 @@ def eyny_download(pyconfig):
     else:
         logger.info('Extract file {} success'.format(eng_name))
 
-    # Download
+    # Download >> user logout >> close driver
     driver.download_images(urls)
+    driver.logout()
+    driver.close()
 
     # Copy temp images to book location
     try:

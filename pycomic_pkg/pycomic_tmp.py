@@ -115,6 +115,7 @@ class EynyDriver():
         options.set_headless(False)
         self.driver = webdriver.Chrome()
 
+        self._LOGOUT_SELECTOR = '#toptb > div > div.y > a:nth-child(12)'
         self.dir_path = '/tmp/pycomic'
 
     def get(self, url):
@@ -122,7 +123,7 @@ class EynyDriver():
 
     def login(self, user_data):
         """
-        Do login steps of  eyny site
+        Do login steps of eyny site
         Input:
             user_data - tuple (username, password)
         """
@@ -140,6 +141,20 @@ class EynyDriver():
         cookie_time.click()
         login_submit.click()
         time.sleep(7)
+
+    def logout(self):
+        """
+        logout after download is finished
+        """
+        logout_link = self.driver.find_element_by_css_selector(self._LOGOUT_SELECTOR)
+        logout_link.click()
+        time.sleep(4)
+
+    def close(self):
+        """
+        Close driver
+        """
+        self.driver.close()
 
     def adult_confirm(self):
         """
@@ -189,6 +204,5 @@ class EynyDriver():
                 self.driver.close()
             self.driver.switch_to.window(self.driver.window_handles[0])
 
-        self.driver.close()
 
     
