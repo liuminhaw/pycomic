@@ -561,7 +561,7 @@ def eyny_download(pyconfig):
 
     # Add data to main menu
     book_number = '-----'
-    process_state = '-------'
+    process_state = '--------'
     data = [eng_name, ch_name, book_number, process_state]
     try:
         pylib.update_menu(pyconfig.main_menu(SECTION), data)
