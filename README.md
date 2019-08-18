@@ -19,7 +19,11 @@ Modify `pycomic_config.ini` for custom configuration
 `user_config.ini` config file will be created in destination directory  
 Set username and password in `user_config.ini` for auto-login 
 
-### Version 2.1.0
+### Version 2.1.1
+- Eyny site log out after function complete
+- Fix file type `change-state` problem
+
+**Version 2.1.0**
 - File new function: eyny-download
 - Add user config file for sites auto-login
 
@@ -29,6 +33,8 @@ Set username and password in `user_config.ini` for auto-login
   - file
   - 999comics
   - manhuagui
+
+---
 
 #### Type File
 - add
@@ -42,7 +48,9 @@ Set username and password in `user_config.ini` for auto-login
 - list-url
 - make-pdf
 - state-change
-- verify
+- verify  
+==================
+- eyny-download
 
 ##### add
 Store comic title information to local.
@@ -116,6 +124,12 @@ Verify download images integrity
 
     pycomic.py verify COMICNAME
 
+##### eyny-download
+Download images process for Eyny site
+
+    pycomic.py eyny-download URL
+
+---
 
 #### Type 999comics
 - add
@@ -223,6 +237,7 @@ Verify `origin` downloaded images
 
     pycomic.py verify-image COMICNAME FILETAG
 
+---
 
 #### Type manhuagui
 - add
