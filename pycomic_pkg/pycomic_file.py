@@ -541,6 +541,9 @@ def eyny_download(pyconfig):
     # TODO: Test for adult confirm page
     driver.adult_confirm()
 
+    # Open source code inspect tab
+    driver.inspect_source_code()
+
     # Add
     # Get file content from user
     print('Enter file content. Ctrl-D to save.')

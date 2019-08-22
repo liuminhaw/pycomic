@@ -163,6 +163,13 @@ class EynyDriver():
         adult_submit = self.driver.find_element_by_name('submit')
         adult_submit.click()
 
+    def inspect_source_code(self):
+        """
+        Open source code inspect tab
+        """
+        pyautogui.hotkey('ctrl', 'u')
+        self.driver.switch_to.window(self.driver.window_handles[-1])
+
     def download_images(self, urls):
         """
         Simulate image download process using pyautogui
