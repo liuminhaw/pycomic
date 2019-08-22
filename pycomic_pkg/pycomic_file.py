@@ -542,7 +542,7 @@ def eyny_download(pyconfig):
     driver.adult_confirm()
 
     # Open source code inspect tab
-    driver.inspect_source_code()
+    driver.inspect_source_code(eyny_url)
 
     # Add
     # Get file content from user

@@ -163,12 +163,15 @@ class EynyDriver():
         adult_submit = self.driver.find_element_by_name('submit')
         adult_submit.click()
 
-    def inspect_source_code(self):
+    def inspect_source_code(self, url):
         """
         Open source code inspect tab
         """
-        pyautogui.hotkey('ctrl', 'u')
+        source_url = 'view-source:{}'.format(url)
+        self.driver.execute_script("window.open();")
         self.driver.switch_to.window(self.driver.window_handles[-1])
+        time.sleep(0.5)
+        self.driver.get(source_url)
 
     def download_images(self, urls):
         """
