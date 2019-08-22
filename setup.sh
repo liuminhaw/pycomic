@@ -33,8 +33,12 @@ function Installation() {
     checkCode 13 "Change file permission failed."   &> /dev/null
     cp pycomic_template.ini ${DESTDIR}/pycomic_config.ini
     checkCode 11 "Copy pycomic_template.ini failed."    &> /dev/null
-    cp user_template.ini ${DESTDIR}/user_config.ini
-    checkCode 11 "Copy user_template.ini failed."    &> /dev/null
+
+    if [[ ! -f ${DESTDIR}/user_config.ini ]]; then
+        cp user_template.ini ${DESTDIR}/user_config.ini
+        checkCode 11 "Copy user_template.ini failed."    &> /dev/null
+    fi
+
     chmod 600 ${DESTDIR}/user_config.ini
     checkCode 13 "Change file permission failed."
     cp requirements.txt ${DESTDIR}
