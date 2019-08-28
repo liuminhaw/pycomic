@@ -19,7 +19,11 @@ Modify `pycomic_config.ini` for custom configuration
 `user_config.ini` config file will be created in destination directory  
 Set username and password in `user_config.ini` for auto-login 
 
-### Version 2.1.1
+### Version 2.1.2
+- Automatically show page source tab
+- Prevent setup script from overiding user config file 
+
+**Version 2.1.1**
 - Eyny site log out after function complete
 - Fix file type `change-state` problem
 
