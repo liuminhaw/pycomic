@@ -77,7 +77,7 @@ def add(pyconfig):
         english_name = sys.argv[2]
         chinese_name = sys.argv[3]
         book_number = sys.argv[4]
-        process_state = '-------'
+        process_state = '--------'
     except IndexError:
         print(message)
         sys.exit(1)
