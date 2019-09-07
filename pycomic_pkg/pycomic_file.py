@@ -52,11 +52,16 @@ def help():
         pycomic.py source [file|999comics|manhuagui]
         pycomic.py state-change COMICNAME
         pycomic.py verify COMICNAME
+        pycomic.py version 
         ----------------------------------------------
         pycomic.py eyny-download URL
     """
 
     print(message)
+
+
+def version(version_value):
+    print('VERSION: {}'.format(version_value))
 
 
 def add(pyconfig):

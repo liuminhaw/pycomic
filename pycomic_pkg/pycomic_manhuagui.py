@@ -61,9 +61,14 @@ def help():
         pycomic.py state-change COMICNAME
         pycomic.py url-image COMICNAME IDENTITYNUM
         pycomic.py verify-image COMICNAME FILETAG
+        pycomic.py version
     """
 
     print(message)
+
+
+def version(version_value):
+    print('VERSION: {}'.format(version_value))
 
 
 def add(pyconfig):

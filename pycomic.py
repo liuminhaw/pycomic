@@ -28,13 +28,14 @@ from pycomic_pkg import logging_class as logcl
 # Pre-defined
 HOME = str(Path.home())
 LOG_DIR = os.path.join(os.getcwd(), 'log')
+VERSION = 'v2.2.0'
 
 SOURCE_999 = '999comics'
 SOURCE_FILE = 'file'
 SOURCE_MANHUAGUI = 'manhuagui'
 
-COMIC_999_URL_HOME = 'https://www.999comics.com'
-COMIC_999_URL = 'https://www.999comics.com/comic/'
+# COMIC_999_URL_HOME = 'https://www.999comics.com'
+# COMIC_999_URL = 'https://www.999comics.com/comic/'
 
 logger = logcl.PersonalLog('pycomic', LOG_DIR)
 # logging.disable(logging.DEBUG)
@@ -98,6 +99,8 @@ def _comic999_action():
         comic999.state_change(pyconfig)
     elif sys.argv[1] == 'verify-image':
         comic999.verify_image(pyconfig)
+    elif sys.argv[1] == 'version':
+        comic999.version(VERSION)
     else:
         comic999.help()
 
@@ -140,6 +143,8 @@ def _manhuagui_action():
         manhuagui.url_image(pyconfig)
     elif sys.argv[1] == 'verify-image':
         manhuagui.verify_image(pyconfig)
+    elif sys.argv[1] == 'version':
+        manhuagui.version(VERSION)
     else:
         manhuagui.help()
 
@@ -177,6 +182,8 @@ def _file_action():
         comic_file.verify(pyconfig)
     elif sys.argv[1] == 'eyny-download':
         comic_file.eyny_download(pyconfig)
+    elif sys.argv[1] == 'version':
+        comic_file.version(VERSION)
     else:
         comic_file.help()
 
