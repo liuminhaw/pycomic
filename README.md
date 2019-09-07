@@ -53,6 +53,7 @@ Set username and password in `user_config.ini` for auto-login
 - make-pdf
 - state-change
 - verify  
+- version  
 ==================
 - eyny-download
 
@@ -128,6 +129,11 @@ Verify download images integrity
 
     pycomic.py verify COMICNAME
 
+##### version
+Show current version of the program
+
+    pycomic.py version
+
 ##### eyny-download
 Download images process for Eyny site
 
@@ -152,6 +158,7 @@ Download images process for Eyny site
 - source
 - state-change
 - verify-image
+- version
 
 ##### add
 Store comic information to menu csv file
@@ -241,6 +248,11 @@ Verify `origin` downloaded images
 
     pycomic.py verify-image COMICNAME FILETAG
 
+##### version
+Show current version of the program
+
+    pycomic.py version
+
 ---
 
 #### Type manhuagui
@@ -261,6 +273,7 @@ Verify `origin` downloaded images
 - state-change
 - url-image
 - verify-image
+- version
 
 ##### add
 Store comic information to menu csv file
@@ -354,3 +367,8 @@ Fetch image urls and download image at once
 Verify downloaded images integrity
 
     pycomic.py verify-image COMICNAME FILETAG
+
+##### version
+Show current version of the program
+
+    pycomic.py version
