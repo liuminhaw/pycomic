@@ -372,3 +372,24 @@ Verify downloaded images integrity
 Show current version of the program
 
     pycomic.py version
+
+
+### Error code
+**Summary**
+`101` - Failed to read config ini file
+
+**`pycomic.py`**  
+`3` - Failed to read config ini file  
+
+**`pycomic_pkg/pycomic_manhuagui`**  
+`1` - Program usage error  
+`3` - Webpage request error  
+`11` - ComicNotFoundError catch  
+`12` - UpdateError catch  
+`13` - FileNotFoundError catch  
+`16` - CSVError catch  
+`18` - DataIndexEror catch  
+`21` - Directory exist error  
+`31` - HTTPError catch  
+`32` - DriverError catch  
+`33` - urlError catch

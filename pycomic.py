@@ -23,6 +23,7 @@ from pycomic_pkg import pycomic_manhuagui as manhuagui
 from pycomic_pkg import pycomic_lib as pylib
 from pycomic_pkg import user_agent_class as agentcl
 from pycomic_pkg import logging_class as logcl
+from pycomic_pkg import exceptions as pycomic_err
 
 
 # Pre-defined
@@ -41,7 +42,10 @@ logger = logcl.PersonalLog('pycomic', LOG_DIR)
 # logging.disable(logging.DEBUG)
 
 # pyconfig = pycl.Config(['.pycomic.ini', os.path.join(HOME, '.pycomic.ini')])
-pyconfig = pylib.Config(['pycomic_config.ini'])
+try:
+    pyconfig = pylib.Config(['pycomic_config.ini'])
+except pycomic_err.ConfigNotFoundError:
+    sys.exit(101)
 
 
 def main():

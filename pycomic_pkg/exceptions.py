@@ -67,3 +67,28 @@ class TXTError(pycomicError):
 #     Raise when exception happened on selenium driver
 #     """
 #     pass
+
+
+class configError(Exception):
+    """
+    Base class of config exception
+    """
+    pass
+
+class ConfigNotFoundError(configError):
+    """
+    Raise if no config ini file is found
+    """
+    pass
+
+class NoSectionError(configError):
+    """
+    Raised by configparser.NoSectionError
+    """
+    pass
+
+class NoOptionError(configError):
+    """
+    Raised by configparser.NoOptionError
+    """
+    pass

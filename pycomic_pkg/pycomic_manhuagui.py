@@ -229,6 +229,7 @@ def download(pyconfig):
 
     urls = url.extract_images(comic.path['links'], duplicates=True, extension=False)
     user_agent = pyconfig.useragent(SECTION)
+
     # Remove book directory if error occur when downloading images
     for index, each_url in enumerate(urls):
         header = {'User-Agent': user_agent, 'Referer': referer + '#p={}'.format(index + 1)}
