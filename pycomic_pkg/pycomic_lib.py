@@ -219,8 +219,8 @@ class Config():
         self.LINKS = 'Links'
         self.IMAGES = 'Images'
         self.COMICS = 'Comics'
-        self.USERAGENT = 'User Agent'
-        self.MAIN_MENU = 'Main Menu'
+        self.USERAGENT = 'User-Agent'
+        self.MAIN_MENU = 'Main-Menu'
         self.ORIGINAL = 'origin'
         self.FORMAT = 'format'
 
@@ -240,129 +240,176 @@ class Config():
             #sys.exit(1)
 
 
-    def useragent(self, section_title):
-        # config_section = self._read_section(section_title)
+    def useragent(self, section):
+        """
+        Return config USERAGENT option in section 
+        """
         user_agent = agentcl.UserAgent().random_computer()
 
         if len(user_agent) != 0:
-            self._config.set(section_title, self.USERAGENT, user_agent)
+            self._config.set(section, self.USERAGENT, user_agent)
             self._write_file()
             return user_agent
         else:
-            return self._read_value(section_title, self.USERAGENT)
-            # return self._read_key(config_section, self.USERAGENT)
+            return self._read_value(section, self.USERAGENT)
 
-    def home_url(self, section_title):
-        # config_section = self._read_section(section_title)
-        # self._read_config(config_section)
-        # return self._home_url
-        return self._read_value(section_title, self.HOME_URL)
+    def home_url(self, section):
+        """
+        Return config HOME_URL option in section 
+        """
+        return self._read_value(section, self.HOME_URL)
 
-    def site_url(self, section_title):
-        # config_section = self._read_section(section_title)
-        # self._read_config(config_section)
-        # return self._site_url
-        return self._read_value(section_title, self.SITE_URL)
+    def site_url(self, section):
+        """
+        Return config SITE_URL option in section 
+        """
+        return self._read_value(section, self.SITE_URL)
 
-    def error_url(self, section_title):
-        # config_section = self._read_section(section_title)
-        # self._read_config(config_section)
-        # return self._error_url
-        return self._read_value(section_title, self.ERROR_URL)
+    def error_url(self, section):
+        """
+        Return config SITE_URL option in section 
+        """
+        return self._read_value(section, self.ERROR_URL)
 
-    def directory(self, section_title):
-        # config_section = self._read_section(section_title)
-        # self._read_config(config_section)
-        # return self._directory
-        return self._read_value(section_title, self.DIRECTORY)
+    def directory(self, section):
+        """
+        Return config DIRECTORY option in section 
+        """
+        return self._read_value(section, self.DIRECTORY)
 
-    def menu(self, section_title):
-        # config_section = self._read_section(section_title)
-        # self._read_config(config_section)
-        _directory = self._read_value(section_title, self.DIRECTORY)
-        _menu = self._read_value(section_title, self.MENU)
-        # return os.path.join(self._directory, self._menu)
+    def menu(self, section):
+        """
+        Return menu directory of configuration 
+        """
+        _directory = self._read_value(section, self.DIRECTORY)
+        _menu = self._read_value(section, self.MENU)
         return os.path.join(_directory, _menu)
 
-    def links(self, section_title):
-        # config_section = self._read_section(section_title)
-        # self._read_config(config_section)
-        # return os.path.join(self._directory, self._links)
-        _directory = self._read_value(section_title, self.DIRECTORY)
-        _links = self._read_value(section_title, self.LINKS)
+    def links(self, section):
+        """
+        Return url direcotry of configuration
+        """
+        _directory = self._read_value(section, self.DIRECTORY)
+        _links = self._read_value(section, self.LINKS)
         return os.path.join(_directory, _links)
 
-    def images(self, section_title):
-        # config_section = self._read_section(section_title)
-        # self._read_config(config_section)
-        # return os.path.join(self._directory, self._images)
-        _directory = self._read_value(section_title, self.DIRECTORY)
-        _images = self._read_value(section_title, self.IMAGES)
+    def images(self, section):
+        """
+        Return books directory of configuration
+        """
+        _directory = self._read_value(section, self.DIRECTORY)
+        _images = self._read_value(section, self.IMAGES)
         return os.path.join(_directory, _images)
 
-    def comics(self, section_title):
-        # config_section = self._read_section(section_title)
-        # self._read_config(config_section)
-        # return os.path.join(self._directory, self._comics)
-        _directory = self._read_value(section_title, self.DIRECTORY)
-        _comics = self._read_value(section_title, self.COMICS)
+    def comics(self, section):
+        """
+        Return pdf directory of configuration
+        """
+        _directory = self._read_value(section, self.DIRECTORY)
+        _comics = self._read_value(section, self.COMICS)
         return os.path.join(_directory, _comics)
 
-    def main_menu(self, section_title):
-        # config_section = self._read_section(section_title)
-        # self._read_config(config_section)
-        # return os.path.join(self._directory, self._menu, self._main_menu)
-        _directory = self._read_value(section_title, self.DIRECTORY)
-        _menu = self._read_value(section_title, self.MENU)
-        _main_menu = self._read_value(section_title, self.MAIN_MENU)
+    def main_menu(self, section):
+        """
+        Return main menu.csv file path 
+        """
+        _directory = self._read_value(section, self.DIRECTORY)
+        _menu = self._read_value(section, self.MENU)
+        _main_menu = self._read_value(section, self.MAIN_MENU)
         return os.path.join(_directory, _menu, _main_menu)
 
-    def origin(self, section_title):
-        # config_section = self._read_section(section_title)
-        # self._read_config(config_section)
-        # return os.path.join(self._directory, self._images, self._original)
-        _directory = self._read_value(section_title, self.DIRECTORY)
-        _images = self._read_value(section_title, self.IMAGES)
-        _original = self._read_value(section_title, self.ORIGINAL)
+    def origin(self, section):
+        """
+        Return origin books directory of configuration
+        """
+        _directory = self._read_value(section, self.DIRECTORY)
+        _images = self._read_value(section, self.IMAGES)
+        _original = self._read_value(section, self.ORIGINAL)
         return os.path.join(_directory, _images, _original)
 
-    def formatted(self, section_title):
-        # config_section = self._read_section(section_title)
-        # self._read_config(config_section)
-        # return os.path.join(self._directory, self._images, self._format)
-        _directory = self._read_value(section_title, self.DIRECTORY)
-        _images = self._read_value(section_title, self.IMAGES)
-        _format = self._read_value(section_title, self.FORMAT)
+    def formatted(self, section):
+        """
+        Return formatted books directory of configuration
+        """
+        _directory = self._read_value(section, self.DIRECTORY)
+        _images = self._read_value(section, self.IMAGES)
+        _format = self._read_value(section, self.FORMAT)
         return os.path.join(_directory, _images, _format)
 
-    def raw(self, section_title):
-        # config_section = self._read_section(section_title)
-        # self._read_config(config_section)
-        # return os.path.join(self._directory, self._links, self._raw)
-        _directory = self._read_value(section_title, self.DIRECTORY)
-        _links = self._read_value(section_title, self.LINKS)
-        _raw = self._read_value(section_title, self.RAW)
+    def raw(self, section):
+        """
+        Return raw url directory of configuration
+        """
+        _directory = self._read_value(section, self.DIRECTORY)
+        _links = self._read_value(section, self.LINKS)
+        _raw = self._read_value(section, self.RAW)
         return os.path.join(_directory, _links, _raw)
 
-    def refine(self, section_title):
-        # config_section = self._read_section(section_title)
-        # self._read_config(config_section)
-        # return os.path.join(self._directory, self._links, self._refine)
-        _directory = self._read_value(section_title, self.DIRECTORY)
-        _links = self._read_value(section_title, self.LINKS)
-        _refine = self._read_value(section_title, self.REFINE)
+    def refine(self, section):
+        """
+        Return refine url directory of configuration
+        """
+        _directory = self._read_value(section, self.DIRECTORY)
+        _links = self._read_value(section, self.LINKS)
+        _refine = self._read_value(section, self.REFINE)
         return os.path.join(_directory, _links, _refine)
 
     def source(self, source=None):
-        # type_section = self._read_section(self.TYPE_SEC)
+        """
+        source argument = None:
+            Return current source of configuration
+        source argument given:
+            Set configuration source to source argument
+        """
 
         if source:
-            # type_section[self.SOURCE] = source
             self._config.set(self.TYPE_SEC, self.SOURCE, source)
             self._write_file()
         else:
-            # return self._read_key(type_section, self.SOURCE)
             return self._read_value(self.TYPE_SEC, self.SOURCE)
+
+    def config_test(self, section, output=False):
+        """
+        Check config file to validate settings
+        Error:
+            pycomic_err.NoSectionError - Section not found
+            pycomic_err.NoOptionError - Option not found
+        """
+        if output:
+            print('Source: {}'.format(self.source()))
+            print('Section: {}\n'.format(section))
+
+            print('- user-agent: {}'.format(self.useragent(section)))
+            print('- home-url: {}'.format(self.home_url(section)))
+            print('- site-url: {}'.format(self.site_url(section)))
+            print('- error-url: {}'.format(self.error_url(section)))
+            print('- directory: {}'.format(self.directory(section)))
+            print('- menu: {}'.format(self.menu(section)))
+            print('- links: {}'.format(self.links(section)))
+            print('- images: {}'.format(self.images(section)))
+            print('- comics: {}'.format(self.comics(section)))
+            print('- main-menu: {}'.format(self.main_menu(section)))
+            print('- origin: {}'.format(self.origin(section)))
+            print('- formatted: {}'.format(self.formatted(section)))
+            print('- raw: {}'.format(self.raw(section)))
+            print('- refine: {}\n'.format(self.refine(section)))
+        else:
+            self.source()
+            self.useragent(section)
+            self.home_url(section)
+            self.site_url(section)
+            self.error_url(section)
+            self.directory(section)
+            self.menu(section)
+            self.links(section)
+            self.images(section)
+            self.comics(section)
+            self.main_menu(section)
+            self.origin(section)
+            self.formatted(section)
+            self.raw(section)
+            self.refine(section)
+
 
     def _read_value(self, section, key):
         """
@@ -386,57 +433,6 @@ class Config():
             raise pycomic_err.NoOptionError
         else:
             return _config_value
-
-
-    # def _read_config(self, section):
-    #     self._site_url = self._read_key(section, self.SITE_URL)
-    #     self._home_url = self._read_key(section, self.HOME_URL)
-    #     self._error_url = self._read_key(section, self.ERROR_URL)
-    #     self._directory = self._read_key(section, self.DIRECTORY)
-    #     self._menu = self._read_key(section, self.MENU)
-    #     self._links = self._read_key(section, self.LINKS)
-    #     self._images = self._read_key(section, self.IMAGES)
-    #     self._comics = self._read_key(section, self.COMICS)
-    #     self._user_agent = self._read_key(section, self.USERAGENT)
-    #     self._main_menu = self._read_key(section, self.MAIN_MENU)
-    #     self._original = self._read_key(section, self.ORIGINAL)
-    #     self._format = self._read_key(section, self.FORMAT)
-
-    #     self._raw = self._read_key(section, self.RAW)
-    #     self._refine = self._read_key(section, self.REFINE)
-
-
-
-    # def _read_section(self, name):
-    #     """
-    #     Read section in .ini files and return the read object
-    #     Input:
-    #         name - section name
-    #     Return:
-    #         Configuration section object
-    #     """
-    #     try:
-    #         section = self._config[name]
-    #     except configparser.NoSectionError:
-    #         logger.warning('Cannot find {} section in .ini files.'.format(name))
-    #         raise pycomic_err.NoSectionError
-    #         # sys.exit(3)
-    #     else:
-    #         return section
-
-
-    # def _read_key(self, section, key):
-    #     """
-    #     Input:
-    #         section - Config file section
-    #         key : String - ini file option key
-    #     Return:
-    #         Value of the key - If key exist
-    #         None - If key not exist
-    #     """
-    #     value = section.get(key)
-
-    #     return value
 
 
     def _write_file(self):

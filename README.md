@@ -376,7 +376,11 @@ Show current version of the program
 
 ### Error code
 **Summary**
-`101` - Failed to read config ini file
+`1` - Program function usage error
+
+`101` - Failed to read config ini file (ConfigNotFoundError)
+`102` - Failed to read section in config file (NoSectionError)
+`103` - Failed to read option in config file (NoOptionError)
 
 **`pycomic.py`**  
 `3` - Failed to read config ini file  
@@ -393,3 +397,16 @@ Show current version of the program
 `31` - HTTPError catch  
 `32` - DriverError catch  
 `33` - urlError catch
+
+**`pycomic_pkg/pycomic_file`**
+`1` - Program usage error  
+`3` - Webpage request error  
+`11` - ComicNotFoundError catch  
+`12` - UpdateError catch  
+`13` - FileNotFoundError catch  
+`14` - FileExistError catch  
+`15` - IOError catch  
+`16` - CSVError catch  
+`17` - TXTError catch  
+`21` - Directory exist error  
+`22` - Make pdf error  

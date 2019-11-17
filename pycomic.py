@@ -51,7 +51,12 @@ except pycomic_err.ConfigNotFoundError:
 def main():
 
     # Source type
-    source_type = pyconfig.source()
+    try:
+        source_type = pyconfig.source()
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Source type methods
     if source_type.lower() == SOURCE_999:
