@@ -3,8 +3,19 @@
 Fetching comic from multiple sources
 
 #### Additional Requirement
+
+##### selenium driver
 selenium `chromedriver` need to be installed before program can be run  
 (Use automated chrome to run the program)
+
+##### `pip` preparation
+Install `wheel` package before requirements installation
+```bash
+# Install wheel first
+pip3 install wheel
+# Then do requirements installation
+pip3 install -r requirements.txt
+```
 
 #### Setup
 Run `setup.sh` script to setup program for use  
