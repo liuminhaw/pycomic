@@ -23,30 +23,40 @@ from pycomic_pkg import pycomic_manhuagui as manhuagui
 from pycomic_pkg import pycomic_lib as pylib
 from pycomic_pkg import user_agent_class as agentcl
 from pycomic_pkg import logging_class as logcl
+from pycomic_pkg import exceptions as pycomic_err
 
 
 # Pre-defined
 HOME = str(Path.home())
 LOG_DIR = os.path.join(os.getcwd(), 'log')
+VERSION = 'v2.1.3'
 
 SOURCE_999 = '999comics'
 SOURCE_FILE = 'file'
 SOURCE_MANHUAGUI = 'manhuagui'
 
-COMIC_999_URL_HOME = 'https://www.999comics.com'
-COMIC_999_URL = 'https://www.999comics.com/comic/'
+# COMIC_999_URL_HOME = 'https://www.999comics.com'
+# COMIC_999_URL = 'https://www.999comics.com/comic/'
 
 logger = logcl.PersonalLog('pycomic', LOG_DIR)
 # logging.disable(logging.DEBUG)
 
 # pyconfig = pycl.Config(['.pycomic.ini', os.path.join(HOME, '.pycomic.ini')])
-pyconfig = pylib.Config(['pycomic_config.ini'])
+try:
+    pyconfig = pylib.Config(['pycomic_config.ini'])
+except pycomic_err.ConfigNotFoundError:
+    sys.exit(101)
 
 
 def main():
 
     # Source type
-    source_type = pyconfig.source()
+    try:
+        source_type = pyconfig.source()
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Source type methods
     if source_type.lower() == SOURCE_999:
@@ -98,6 +108,8 @@ def _comic999_action():
         comic999.state_change(pyconfig)
     elif sys.argv[1] == 'verify-image':
         comic999.verify_image(pyconfig)
+    elif sys.argv[1] == 'version':
+        comic999.version(VERSION)
     else:
         comic999.help()
 
@@ -140,6 +152,8 @@ def _manhuagui_action():
         manhuagui.url_image(pyconfig)
     elif sys.argv[1] == 'verify-image':
         manhuagui.verify_image(pyconfig)
+    elif sys.argv[1] == 'version':
+        manhuagui.version(VERSION)
     else:
         manhuagui.help()
 
@@ -177,6 +191,8 @@ def _file_action():
         comic_file.verify(pyconfig)
     elif sys.argv[1] == 'eyny-download':
         comic_file.eyny_download(pyconfig)
+    elif sys.argv[1] == 'version':
+        comic_file.version(VERSION)
     else:
         comic_file.help()
 

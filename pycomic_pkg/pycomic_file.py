@@ -52,11 +52,16 @@ def help():
         pycomic.py source [file|999comics|manhuagui]
         pycomic.py state-change COMICNAME
         pycomic.py verify COMICNAME
+        pycomic.py version 
         ----------------------------------------------
         pycomic.py eyny-download URL
     """
 
     print(message)
+
+
+def version(version_value):
+    print('VERSION: {}'.format(version_value))
 
 
 def add(pyconfig):
@@ -74,6 +79,14 @@ def add(pyconfig):
     except IndexError:
         print(message)
         sys.exit(1)
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=True)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -131,13 +144,21 @@ def convert(pyconfig):
         print(message)
         sys.exit(1)
 
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=True)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
     _check(pyconfig, SECTION)
 
     # Find comic from menu csv file
     try:
-        eng_name, ch_name, number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+        eng_name, ch_name, _number, _status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
     except pycomic_err.ComicNotFoundError:
         logger.info('No match to {} found'.format(comic_name))
         sys.exit(11)
@@ -164,7 +185,6 @@ def convert(pyconfig):
         logger.info('Convert {} to jpeg files success'.format(comic.path['origin']))
 
 
-
 def download(pyconfig):
     message = \
     """
@@ -176,6 +196,14 @@ def download(pyconfig):
     except IndexError:
         print(message)
         sys.exit(1)
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=True)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -223,13 +251,21 @@ def fetch_url(pyconfig):
         print(message)
         sys.exit(1)
 
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=True)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
     _check(pyconfig, SECTION)
 
     # Find comic from menu csv file
     try:
-       eng_name, ch_name, _number, _status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+        eng_name, ch_name, _number, _status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
     except pycomic_err.ComicNotFoundError:
         logger.info('No match to {} found'.format(comic_name))
         sys.exit(11)
@@ -255,7 +291,7 @@ def fetch_url(pyconfig):
 
 
 def list(pyconfig):
-    message = \
+    _message = \
     """
     USAGE:
         pycomic.py list [PATTERN]
@@ -264,6 +300,14 @@ def list(pyconfig):
         pattern = sys.argv[2]
     except IndexError:
         pattern = ''
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=False)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -289,6 +333,14 @@ def list_books(pyconfig):
     except IndexError:
         pattern = ''
 
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=False)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
     _check(pyconfig, SECTION)
@@ -306,9 +358,8 @@ def list_books(pyconfig):
         sys.exit(1)
 
 
-
 def list_pdf(pyconfig):
-    message = \
+    _message = \
     """
     USAGE:
         pycomic.py list-pdf [PATTERN]
@@ -317,6 +368,14 @@ def list_pdf(pyconfig):
         pattern = sys.argv[2]
     except IndexError:
         pattern = ''
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=False)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -328,7 +387,7 @@ def list_pdf(pyconfig):
 
 
 def list_url(pyconfig):
-    message = \
+    _message = \
     """
     USAGE:
         pycomic.py list-url [PATTERN]
@@ -337,6 +396,14 @@ def list_url(pyconfig):
         pattern = sys.argv[2]
     except IndexError:
         pattern = ''
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=False)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -358,6 +425,14 @@ def make_pdf(pyconfig):
     except IndexError:
         print(message)
         sys.exit(1)
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=True)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -398,6 +473,14 @@ def source(pyconfig):
     USAGE:
         pycomic.py source [file|999comics|manhuagui]
     """
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=False)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     if len(sys.argv) == 2:
         pylib.get_source(pyconfig)
     elif sys.argv[2] == 'file' or sys.argv[2] == '999comics' or sys.argv[2] == 'manhuagui':
@@ -418,6 +501,14 @@ def state_change(pyconfig):
     except IndexError:
         print(message)
         sys.exit(1)
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=False)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -463,13 +554,21 @@ def verify(pyconfig):
         print(message)
         sys.exit(1)
 
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=True)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
     _check(pyconfig, SECTION)
 
     # Find comic from menu csv file
     try:
-        eng_name, ch_name, number, status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
+        eng_name, ch_name, _number, _status = pylib.find_menu_comic(pyconfig, SECTION, comic_name)
     except pycomic_err.ComicNotFoundError:
         logger.info('No match to {} found'.format(comic_name))
         sys.exit(11)
@@ -507,6 +606,14 @@ def eyny_download(pyconfig):
     # Get user config - eyny
     user_config = pylib.UserConfig(['user_config.ini'])
     user_info = user_config.eyny_info()
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=False)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)

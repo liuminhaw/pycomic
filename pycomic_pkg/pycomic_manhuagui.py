@@ -61,9 +61,14 @@ def help():
         pycomic.py state-change COMICNAME
         pycomic.py url-image COMICNAME IDENTITYNUM
         pycomic.py verify-image COMICNAME FILETAG
+        pycomic.py version
     """
 
     print(message)
+
+
+def version(version_value):
+    print('VERSION: {}'.format(version_value))
 
 
 def add(pyconfig):
@@ -77,10 +82,18 @@ def add(pyconfig):
         english_name = sys.argv[2]
         chinese_name = sys.argv[3]
         book_number = sys.argv[4]
-        process_state = '-------'
+        process_state = '--------'
     except IndexError:
         print(message)
         sys.exit(1)
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=True)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -113,6 +126,14 @@ def convert_image(pyconfig):
     except IndexError:
         print(message)
         sys.exit(1)
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -173,6 +194,14 @@ def download(pyconfig):
         print(message)
         sys.exit(1)
 
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=True)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
 
@@ -224,6 +253,7 @@ def download(pyconfig):
 
     urls = url.extract_images(comic.path['links'], duplicates=True, extension=False)
     user_agent = pyconfig.useragent(SECTION)
+
     # Remove book directory if error occur when downloading images
     for index, each_url in enumerate(urls):
         header = {'User-Agent': user_agent, 'Referer': referer + '#p={}'.format(index + 1)}
@@ -262,6 +292,14 @@ def error_url(pyconfig):
         print(message)
         sys.exit(1)
 
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
 
@@ -296,6 +334,14 @@ def fetch_menu(pyconfig):
     except IndexError:
         print(message)
         sys.exit(1)
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=True)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -369,12 +415,20 @@ def fetch_url(pyconfig):
         print(message)
         sys.exit(1)
 
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=True)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
 
     # Find comic from menu csv file
     eng_name, ch_name, number, _status = _check_comic_existence(pyconfig, comic_name)
-     
+    
     # Define comic object
     comic = pylib.Comic(eng_name, ch_name, number)
     comic.file_path(pyconfig.menu(SECTION), 'menu', extension='_menu.csv')
@@ -438,6 +492,14 @@ def list(pyconfig):
     except IndexError:
         pattern = ''
 
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
 
@@ -466,6 +528,14 @@ def list_books(pyconfig):
         pattern = sys.argv[4]
     except IndexError:
         pattern = ''
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -505,6 +575,14 @@ def list_menu(pyconfig):
     except IndexError:
         pattern = ''
 
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
 
@@ -540,6 +618,14 @@ def list_pdf(pyconfig):
     except IndexError:
         pattern = ''
 
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
 
@@ -571,6 +657,14 @@ def list_url(pyconfig):
     except IndexError:
         pattern = ''
 
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
 
@@ -600,6 +694,14 @@ def make_pdf(pyconfig):
     except IndexError:
         print(message)
         sys.exit(1)
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=True)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -658,6 +760,14 @@ def state_change(pyconfig):
         print(message)
         sys.exit(1)
 
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
 
@@ -694,6 +804,14 @@ def source(pyconfig):
     USAGE:
         pycomic.py source [file|999comics|manhuagui]
     """
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
+
     if len(sys.argv) == 2:
         pylib.get_source(pyconfig)
     elif sys.argv[2] == 'file' or sys.argv[2] == '999comics' or sys.argv[2] == 'manhuagui':
@@ -717,6 +835,14 @@ def url_image(pyconfig):
     except:
         print(message)
         sys.exit(1)    
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION, output=True)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
@@ -805,6 +931,14 @@ def verify_image(pyconfig):
     except IndexError:
         print(message)
         sys.exit(1)
+
+    # Chekc config file integrity
+    try:
+        pyconfig.config_test(SECTION)
+    except pycomic_err.NoSectionError:
+        sys.exit(102)
+    except pycomic_err.NoOptionError:
+        sys.exit(103)
 
     # Check directory structure
     pylib.check_structure(pyconfig, SECTION)
