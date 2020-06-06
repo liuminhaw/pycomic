@@ -29,7 +29,7 @@ from pycomic_pkg import exceptions as pycomic_err
 # Pre-defined
 HOME = str(Path.home())
 LOG_DIR = os.path.join(os.getcwd(), 'log')
-VERSION = 'v2.2.0'
+VERSION = 'v2.1.3'
 
 SOURCE_999 = '999comics'
 SOURCE_FILE = 'file'
